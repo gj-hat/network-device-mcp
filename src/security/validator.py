@@ -1,11 +1,10 @@
 """安全校验模块。
 
-提供两层防护：
-1. 参数值注入字符检测 — 拦截 Shell 特殊字符
-2. 拼装后命令兜底黑名单 — 防御纵深，防止配置错误导致危险命令通过
+参数值注入字符检测 — 拦截 Shell 特殊字符。
+命令安全性由封闭命令集（commands.yaml）保证，无需兜底黑名单。
 """
 
-from src.core.config import DANGEROUS_KEYWORDS, INJECTION_CHARS
+from src.core.config import INJECTION_CHARS
 
 
 class SecurityError(Exception):
@@ -31,21 +30,3 @@ def check_injection(value: str) -> None:
         raise SecurityError(f"参数包含非法字符: {chars_display}")
 
 
-def check_blacklist(command: str) -> None:
-    """兜底检查拼装后的最终命令是否包含危险关键词。
-
-    理论上不应触发（因为主命令来自配置文件的安全命令集），
-    如果触发说明配置有问题，应立即拒绝并告警。
-
-    Args:
-        command: 拼装后的最终命令字符串
-
-    Raises:
-        SecurityError: 发现危险关键词时抛出
-    """
-    cmd_lower = command.lower()
-    for keyword in DANGEROUS_KEYWORDS:
-        if keyword in cmd_lower:
-            raise SecurityError(
-                f"命令触发兜底安全检查，包含危险关键词: '{keyword.strip()}'"
-            )

@@ -13,7 +13,7 @@ from typing import Any
 import yaml
 
 from src.core.config import COMMANDS_YAML_PATH, SUPPORTED_DEVICE_TYPES
-from src.security.validator import SecurityError, check_blacklist, check_injection
+from src.security.validator import SecurityError, check_injection
 
 # ── 类型定义（兼容 Python 3.10+）──────────────────────────
 ParamDef = dict[str, Any]
@@ -84,7 +84,6 @@ def resolve_and_validate(
     1. 查找 command_id → 找不到则拒绝
     2. 校验参数（必填、类型、范围、注入）
     3. 拼装最终命令
-    4. 兜底黑名单检查
 
     Args:
         device_type: 设备类型
@@ -138,9 +137,6 @@ def resolve_and_validate(
     final_command = base_command
     for pname, pvalue in replacements.items():
         final_command = final_command.replace("{" + pname + "}", pvalue)
-
-    # ④ 兜底黑名单
-    check_blacklist(final_command)
 
     return final_command
 

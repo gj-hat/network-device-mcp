@@ -51,13 +51,3 @@ SUPPORTED_DEVICE_TYPES: set[str] = set(DEVICE_TYPE_MAP.keys())
 # 参数值禁止包含的注入字符
 INJECTION_CHARS: set[str] = {";", "|", "&", "`", "$", "\n", "\r", "\\"}
 
-# 拼装后命令的兜底危险关键词（全小写匹配）
-DANGEROUS_KEYWORDS: list[str] = [
-    "configure ", "config t", "config term",
-    "config system", "config firewall", "config vpn",
-    "system-view",
-    "delete", "write ", "erase",
-    "reboot", "reload", "shutdown", "format", "destroy",
-    "reset", "set ", "clear ", "no ", "copy ", "move ",
-    "remove",
-]
