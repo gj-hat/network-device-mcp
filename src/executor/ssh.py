@@ -17,6 +17,10 @@ from src.core.config import DEVICE_TYPE_MAP, MAX_CONCURRENCY, SSH_TIMEOUT
 # 模块级信号量，控制全局 SSH 并发连接数
 _semaphore = asyncio.Semaphore(MAX_CONCURRENCY)
 
+# 需要使用 send_command_timing 的 netmiko device_type 集合
+# 这些设备的 prompt 匹配容易误判（输出中含主机名导致提前截断）
+_TIMING_DEVICE_TYPES: set[str] = {"hp_comware", "huawei_vrp"}
+
 
 class SSHExecutionError(Exception):
     """SSH 执行失败时抛出的异常。"""
@@ -134,10 +138,22 @@ async def execute_multi(
     return results
 
 
+def _send_command(conn, command: str, device_type: str) -> str:
+    """根据设备类型选择合适的命令发送方式。
+
+    hp_comware / huawei_vrp 使用 send_command_timing（基于时间判断输出结束），
+    避免 prompt 误判导致输出截断或串流。
+    其他设备使用 send_command（基于 prompt 匹配，更精确）。
+    """
+    if device_type in _TIMING_DEVICE_TYPES:
+        return conn.send_command_timing(command, delay_factor=2)
+    return conn.send_command(command, read_timeout=SSH_TIMEOUT)
+
+
 def _execute_blocking(device_params: dict, command: str) -> str:
     """同步执行单条 SSH 命令（在线程中运行）。"""
     with ConnectHandler(**device_params) as conn:
-        output = conn.send_command(command, read_timeout=SSH_TIMEOUT)
+        output = _send_command(conn, command, device_params["device_type"])
     return output
 
 
@@ -146,11 +162,12 @@ def _execute_multi_blocking(device_params: dict, commands: list[str]) -> list[di
 
     单条命令执行异常不中断连接，继续执行后续命令。
     """
+    device_type = device_params["device_type"]
     results = []
     with ConnectHandler(**device_params) as conn:
         for cmd in commands:
             try:
-                output = conn.send_command(cmd, read_timeout=SSH_TIMEOUT)
+                output = _send_command(conn, cmd, device_type)
                 results.append({
                     "command": cmd,
                     "success": True,
