@@ -10,6 +10,11 @@ venv/
 
 # 日志
 logs/audit.log
+logs/server.log
+
+# 运行时
+.mcp.pid
+nohup.out
 
 # IDE
 .idea/

@@ -73,7 +73,7 @@ cp .env.example .env
 ./start.sh
 ```
 
-服务启动后监听 `http://0.0.0.0:8081/sse`。
+服务启动后监听 `http://0.0.0.0:8081/network-device-mcp`。
 
 ### 2. 配置 AI 客户端
 
@@ -84,7 +84,7 @@ cp .env.example .env
   "mcpServers": {
     "network-readonly": {
       "type": "sse",
-      "url": "http://你的服务器IP:8081/sse"
+      "url": "http://你的服务器IP:8081/network-device-mcp"
     }
   }
 }

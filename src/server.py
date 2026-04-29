@@ -24,6 +24,7 @@ def create_app() -> FastMCP:
         "network-readonly-query",
         host=HOST,
         port=PORT,
+        sse_path="/network-device-mcp",
     )
 
     # 预加载命令配置
@@ -39,5 +40,5 @@ def create_app() -> FastMCP:
 app = create_app()
 
 if __name__ == "__main__":
-    print(f"启动 MCP 服务: http://{HOST}:{PORT}/sse")
+    print(f"启动 MCP 服务: http://{HOST}:{PORT}/network-device-mcp")
     app.run(transport="sse")

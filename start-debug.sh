@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
-# 网络设备只读查询 MCP 服务 — 后台启动
-# 用法: ./start.sh
+# 网络设备只读查询 MCP 服务 — 前台 Debug 模式启动
+# 用法: ./start-debug.sh
+# Ctrl+C 停止
 #
 
 set -euo pipefail
@@ -12,13 +13,12 @@ cd "$SCRIPT_DIR"
 VENV_DIR="$SCRIPT_DIR/.venv"
 REQUIREMENTS="$SCRIPT_DIR/src/requirements.txt"
 PID_FILE="$SCRIPT_DIR/.mcp.pid"
-LOG_FILE="$SCRIPT_DIR/logs/server.log"
 
-# ── 检查是否已在运行 ─────────────────────────────────────
+# ── 检查后台实例 ──────────────────────────────────────────
 if [ -f "$PID_FILE" ]; then
     OLD_PID=$(cat "$PID_FILE")
     if kill -0 "$OLD_PID" 2>/dev/null; then
-        echo "[warn] 服务已在运行 (PID: $OLD_PID)，如需重启请先执行 ./stop.sh"
+        echo "[warn] 后台服务正在运行 (PID: $OLD_PID)，请先执行 ./stop.sh"
         exit 1
     else
         rm -f "$PID_FILE"
@@ -41,10 +41,8 @@ fi
 # ── 目录准备 ──────────────────────────────────────────────
 mkdir -p "$SCRIPT_DIR/logs"
 
-# ── 后台启动 ──────────────────────────────────────────────
-echo "[start] 后台启动 MCP 服务..."
-nohup python3 "$SCRIPT_DIR/src/server.py" >> "$LOG_FILE" 2>&1 &
-echo $! > "$PID_FILE"
-echo "[start] 服务已启动 (PID: $(cat "$PID_FILE"))"
-echo "[start] 日志: $LOG_FILE"
-echo "[start] 停止: ./stop.sh"
+# ── 前台启动（Debug 模式）────────────────────────────────
+export MCP_DEBUG=1
+echo "[debug] 前台启动 MCP 服务（Ctrl+C 停止）..."
+echo "────────────────────────────────────────"
+exec python3 "$SCRIPT_DIR/src/server.py"
