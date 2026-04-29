@@ -1,0 +1,1818 @@
+# ============================================================
+# 网络设备只读命令封闭集合
+# 参考 ntc-templates (https://github.com/networktocode/ntc-templates)
+# 格式：每条命令 = id + name + description + command [+ params]
+# ============================================================
+
+# ── Cisco IOS / IOS-XE ───────────────────────────────────────
+cisco:
+  # --- 系统信息 ---
+  - id: show_version
+    name: "查看系统版本"
+    description: "显示设备型号、IOS 版本、运行时间等基础信息"
+    command: "show version"
+
+  - id: show_inventory
+    name: "查看硬件清单"
+    description: "显示设备模块、SN 序列号、PID 等硬件信息"
+    command: "show inventory"
+
+  - id: show_module
+    name: "查看模块状态"
+    description: "显示各模块在线状态和型号"
+    command: "show module"
+
+  - id: show_redundancy
+    name: "查看冗余状态"
+    description: "显示 SSO/HA 冗余引擎状态"
+    command: "show redundancy"
+
+  - id: show_boot
+    name: "查看启动配置"
+    description: "显示系统引导变量"
+    command: "show boot"
+
+  - id: show_clock
+    name: "查看系统时间"
+    description: "显示设备当前时间"
+    command: "show clock"
+
+  # --- 性能与资源 ---
+  - id: show_processes_cpu
+    name: "查看 CPU 利用率"
+    description: "显示 CPU 总体和各进程使用率"
+    command: "show processes cpu"
+
+  - id: show_processes_memory
+    name: "查看内存使用"
+    description: "显示内存总量、已用、空闲"
+    command: "show processes memory"
+
+  - id: show_environment
+    name: "查看环境状态"
+    description: "显示温度、电源、风扇状态"
+    command: "show environment all"
+
+  - id: show_platform_resources
+    name: "查看平台资源"
+    description: "显示 TCAM、FIB 等硬件资源使用情况"
+    command: "show platform resources"
+
+  # --- 接口 ---
+  - id: show_ip_interface_brief
+    name: "查看接口 IP 摘要"
+    description: "显示所有接口 IP 地址和状态摘要"
+    command: "show ip interface brief"
+
+  - id: show_interfaces_status
+    name: "查看接口状态"
+    description: "显示所有接口状态、速率、双工、VLAN"
+    command: "show interfaces status"
+
+  - id: show_interface_detail
+    name: "查看指定接口详情"
+    description: "显示指定接口的详细计数器和状态"
+    command: "show interfaces {interface}"
+    params:
+      - name: interface
+        type: string
+        description: "接口名称，如 GigabitEthernet0/1"
+        pattern: "^[A-Za-z][A-Za-z0-9/\\-\\.]+$"
+
+  - id: show_interfaces_description
+    name: "查看接口描述"
+    description: "显示所有接口描述信息"
+    command: "show interfaces description"
+
+  - id: show_interfaces_trunk
+    name: "查看 Trunk 接口"
+    description: "显示所有 Trunk 接口及其允许的 VLAN"
+    command: "show interfaces trunk"
+
+  - id: show_interfaces_switchport
+    name: "查看交换端口信息"
+    description: "显示指定接口的交换端口配置"
+    command: "show interfaces {interface} switchport"
+    params:
+      - name: interface
+        type: string
+        description: "接口名称"
+        pattern: "^[A-Za-z][A-Za-z0-9/\\-\\.]+$"
+
+  - id: show_interfaces_counters
+    name: "查看接口计数器"
+    description: "显示接口错误和流量计数"
+    command: "show interfaces counters"
+
+  - id: show_interfaces_transceiver
+    name: "查看光模块信息"
+    description: "显示光模块型号和光功率"
+    command: "show interfaces transceiver"
+
+  # --- 二层 ---
+  - id: show_vlan
+    name: "查看 VLAN"
+    description: "显示所有 VLAN 及其成员端口"
+    command: "show vlan"
+
+  - id: show_vlan_id
+    name: "查看指定 VLAN"
+    description: "显示指定 VLAN 的详细信息"
+    command: "show vlan id {vlan_id}"
+    params:
+      - name: vlan_id
+        type: integer
+        description: "VLAN ID"
+        min: 1
+        max: 4094
+
+  - id: show_mac_address_table
+    name: "查看 MAC 地址表"
+    description: "显示全部 MAC 地址表"
+    command: "show mac address-table"
+
+  - id: show_mac_address_table_interface
+    name: "查看接口 MAC 表"
+    description: "显示指定接口学到的 MAC 地址"
+    command: "show mac address-table interface {interface}"
+    params:
+      - name: interface
+        type: string
+        description: "接口名称"
+        pattern: "^[A-Za-z][A-Za-z0-9/\\-\\.]+$"
+
+  - id: show_spanning_tree
+    name: "查看生成树"
+    description: "显示 STP 状态和根桥信息"
+    command: "show spanning-tree"
+
+  - id: show_spanning_tree_vlan
+    name: "查看 VLAN 生成树"
+    description: "显示指定 VLAN 的 STP 信息"
+    command: "show spanning-tree vlan {vlan_id}"
+    params:
+      - name: vlan_id
+        type: integer
+        description: "VLAN ID"
+        min: 1
+        max: 4094
+
+  - id: show_etherchannel_summary
+    name: "查看端口聚合"
+    description: "显示 EtherChannel/Port-channel 汇总信息"
+    command: "show etherchannel summary"
+
+  - id: show_etherchannel_detail
+    name: "查看端口聚合详情"
+    description: "显示 EtherChannel 详细信息"
+    command: "show etherchannel detail"
+
+  # --- 三层 / 路由 ---
+  - id: show_ip_route
+    name: "查看 IP 路由表"
+    description: "显示完整 IPv4 路由表"
+    command: "show ip route"
+
+  - id: show_ip_route_network
+    name: "查看指定路由"
+    description: "查看到指定网络的路由详情"
+    command: "show ip route {network}"
+    params:
+      - name: network
+        type: ip_address
+        description: "目标 IP 地址或网络"
+
+  - id: show_ip_route_summary
+    name: "查看路由表摘要"
+    description: "显示各协议路由条数统计"
+    command: "show ip route summary"
+
+  - id: show_ip_arp
+    name: "查看 ARP 表"
+    description: "显示 ARP 缓存"
+    command: "show ip arp"
+
+  - id: show_ip_arp_ip
+    name: "查看指定 IP 的 ARP"
+    description: "查看指定 IP 地址的 ARP 条目"
+    command: "show ip arp {ip_address}"
+    params:
+      - name: ip_address
+        type: ip_address
+        description: "目标 IP 地址"
+
+  # --- 路由协议 ---
+  - id: show_ip_ospf
+    name: "查看 OSPF 进程"
+    description: "显示 OSPF 进程概览"
+    command: "show ip ospf"
+
+  - id: show_ip_ospf_neighbor
+    name: "查看 OSPF 邻居"
+    description: "显示 OSPF 邻居关系"
+    command: "show ip ospf neighbor"
+
+  - id: show_ip_ospf_interface_brief
+    name: "查看 OSPF 接口摘要"
+    description: "显示 OSPF 接口摘要"
+    command: "show ip ospf interface brief"
+
+  - id: show_ip_ospf_database
+    name: "查看 OSPF LSDB"
+    description: "显示 OSPF 链路状态数据库"
+    command: "show ip ospf database"
+
+  - id: show_ip_bgp_summary
+    name: "查看 BGP 摘要"
+    description: "显示 BGP 邻居和路由统计"
+    command: "show ip bgp summary"
+
+  - id: show_ip_bgp
+    name: "查看 BGP 路由表"
+    description: "显示 BGP 路由表"
+    command: "show ip bgp"
+
+  - id: show_ip_bgp_neighbors
+    name: "查看 BGP 邻居"
+    description: "显示 BGP 邻居详细信息"
+    command: "show ip bgp neighbors"
+
+  - id: show_ip_eigrp_neighbors
+    name: "查看 EIGRP 邻居"
+    description: "显示 EIGRP 邻居"
+    command: "show ip eigrp neighbors"
+
+  - id: show_ip_eigrp_topology
+    name: "查看 EIGRP 拓扑"
+    description: "显示 EIGRP 拓扑表"
+    command: "show ip eigrp topology"
+
+  # --- 邻居发现 ---
+  - id: show_cdp_neighbors
+    name: "查看 CDP 邻居"
+    description: "显示 CDP 邻居摘要"
+    command: "show cdp neighbors"
+
+  - id: show_cdp_neighbors_detail
+    name: "查看 CDP 邻居详情"
+    description: "显示 CDP 邻居详细信息（含管理 IP）"
+    command: "show cdp neighbors detail"
+
+  - id: show_lldp_neighbors
+    name: "查看 LLDP 邻居"
+    description: "显示 LLDP 邻居摘要"
+    command: "show lldp neighbors"
+
+  - id: show_lldp_neighbors_detail
+    name: "查看 LLDP 邻居详情"
+    description: "显示 LLDP 邻居详细信息"
+    command: "show lldp neighbors detail"
+
+  # --- 安全 / ACL ---
+  - id: show_access_lists
+    name: "查看 ACL"
+    description: "显示所有访问控制列表"
+    command: "show access-lists"
+
+  - id: show_ip_access_lists
+    name: "查看 IP ACL"
+    description: "显示 IP 访问控制列表"
+    command: "show ip access-lists"
+
+  # --- DHCP ---
+  - id: show_ip_dhcp_binding
+    name: "查看 DHCP 绑定"
+    description: "显示 DHCP 地址分配情况"
+    command: "show ip dhcp binding"
+
+  - id: show_ip_dhcp_pool
+    name: "查看 DHCP 地址池"
+    description: "显示 DHCP 地址池统计"
+    command: "show ip dhcp pool"
+
+  # --- MPLS ---
+  - id: show_mpls_forwarding_table
+    name: "查看 MPLS 转发表"
+    description: "显示 MPLS 标签转发表"
+    command: "show mpls forwarding-table"
+
+  - id: show_mpls_ldp_neighbor
+    name: "查看 MPLS LDP 邻居"
+    description: "显示 MPLS LDP 邻居"
+    command: "show mpls ldp neighbor"
+
+  - id: show_mpls_interfaces
+    name: "查看 MPLS 接口"
+    description: "显示启用 MPLS 的接口"
+    command: "show mpls interfaces"
+
+  # --- HSRP / VRRP ---
+  - id: show_standby
+    name: "查看 HSRP 状态"
+    description: "显示 HSRP 虚拟网关状态"
+    command: "show standby"
+
+  - id: show_standby_brief
+    name: "查看 HSRP 摘要"
+    description: "显示 HSRP 状态摘要"
+    command: "show standby brief"
+
+  - id: show_vrrp
+    name: "查看 VRRP 状态"
+    description: "显示 VRRP 虚拟路由器状态"
+    command: "show vrrp"
+
+  - id: show_vrrp_brief
+    name: "查看 VRRP 摘要"
+    description: "显示 VRRP 状态摘要"
+    command: "show vrrp brief"
+
+  # --- NTP / SNMP ---
+  - id: show_ntp_status
+    name: "查看 NTP 状态"
+    description: "显示 NTP 同步状态"
+    command: "show ntp status"
+
+  - id: show_ntp_associations
+    name: "查看 NTP 关联"
+    description: "显示 NTP 服务器关联"
+    command: "show ntp associations"
+
+  - id: show_snmp_community
+    name: "查看 SNMP 社区"
+    description: "显示 SNMP 社区字符串配置"
+    command: "show snmp community"
+
+  # --- 配置查看（只读）---
+  - id: show_running_config
+    name: "查看运行配置"
+    description: "显示当前运行配置（只读查看）"
+    command: "show running-config"
+
+  - id: show_startup_config
+    name: "查看启动配置"
+    description: "显示保存的启动配置"
+    command: "show startup-config"
+
+  - id: show_running_interface
+    name: "查看接口配置"
+    description: "显示指定接口的运行配置"
+    command: "show running-config interface {interface}"
+    params:
+      - name: interface
+        type: string
+        description: "接口名称"
+        pattern: "^[A-Za-z][A-Za-z0-9/\\-\\.]+$"
+
+  # --- 诊断 ---
+  - id: ping_ip
+    name: "Ping 测试"
+    description: "Ping 指定 IP 地址"
+    command: "ping {ip_address}"
+    params:
+      - name: ip_address
+        type: ip_address
+        description: "目标 IP 地址"
+
+  - id: traceroute_ip
+    name: "路由追踪"
+    description: "追踪到目标 IP 的路由路径"
+    command: "traceroute {ip_address}"
+    params:
+      - name: ip_address
+        type: ip_address
+        description: "目标 IP 地址"
+
+  - id: show_logging
+    name: "查看日志"
+    description: "显示设备日志缓冲区"
+    command: "show logging"
+
+  - id: show_users
+    name: "查看在线用户"
+    description: "显示当前登录用户"
+    command: "show users"
+
+  - id: show_tcp_brief
+    name: "查看 TCP 连接"
+    description: "显示活动 TCP 连接"
+    command: "show tcp brief all"
+
+  - id: show_ip_nat_translations
+    name: "查看 NAT 转换"
+    description: "显示 NAT 转换表"
+    command: "show ip nat translations"
+
+  - id: show_ip_nat_statistics
+    name: "查看 NAT 统计"
+    description: "显示 NAT 统计信息"
+    command: "show ip nat statistics"
+
+  - id: show_policy_map_interface
+    name: "查看 QoS 策略"
+    description: "显示接口 QoS 策略映射"
+    command: "show policy-map interface {interface}"
+    params:
+      - name: interface
+        type: string
+        description: "接口名称"
+        pattern: "^[A-Za-z][A-Za-z0-9/\\-\\.]+$"
+
+  - id: show_ip_cef
+    name: "查看 CEF 转发"
+    description: "显示 CEF 转发表"
+    command: "show ip cef"
+
+# ── Cisco ASA ────────────────────────────────────────────────
+cisco_asa:
+  - id: show_version
+    name: "查看系统版本"
+    description: "显示 ASA 版本、运行时间、硬件信息"
+    command: "show version"
+
+  - id: show_inventory
+    name: "查看硬件清单"
+    description: "显示硬件清单和序列号"
+    command: "show inventory"
+
+  - id: show_cpu_usage
+    name: "查看 CPU 使用"
+    description: "显示 CPU 使用率"
+    command: "show cpu usage"
+
+  - id: show_memory
+    name: "查看内存"
+    description: "显示内存使用详情"
+    command: "show memory detail"
+
+  - id: show_clock
+    name: "查看时间"
+    description: "显示系统时间"
+    command: "show clock"
+
+  - id: show_interface_ip_brief
+    name: "查看接口 IP 摘要"
+    description: "显示接口 IP 和状态摘要"
+    command: "show interface ip brief"
+
+  - id: show_interface_detail
+    name: "查看接口详情"
+    description: "显示指定接口详细信息"
+    command: "show interface {interface}"
+    params:
+      - name: interface
+        type: string
+        description: "接口名称"
+        pattern: "^[A-Za-z][A-Za-z0-9/\\-\\.]+$"
+
+  - id: show_xlate
+    name: "查看 NAT 转换"
+    description: "显示活跃 NAT 转换（xlate）"
+    command: "show xlate"
+
+  - id: show_xlate_count
+    name: "查看 NAT 转换计数"
+    description: "显示 xlate 条目数量"
+    command: "show xlate count"
+
+  - id: show_conn
+    name: "查看活跃连接"
+    description: "显示活跃防火墙连接"
+    command: "show conn"
+
+  - id: show_conn_count
+    name: "查看连接计数"
+    description: "显示活跃连接数量"
+    command: "show conn count"
+
+  - id: show_access_list
+    name: "查看 ACL"
+    description: "显示所有访问控制列表和命中计数"
+    command: "show access-list"
+
+  - id: show_nat
+    name: "查看 NAT 规则"
+    description: "显示 NAT 规则配置"
+    command: "show nat"
+
+  - id: show_service_policy
+    name: "查看服务策略"
+    description: "显示 MPF 服务策略统计"
+    command: "show service-policy"
+
+  - id: show_route
+    name: "查看路由表"
+    description: "显示路由表"
+    command: "show route"
+
+  - id: show_ospf_neighbor
+    name: "查看 OSPF 邻居"
+    description: "显示 OSPF 邻居"
+    command: "show ospf neighbor"
+
+  - id: show_arp
+    name: "查看 ARP 表"
+    description: "显示 ARP 缓存"
+    command: "show arp"
+
+  - id: show_failover
+    name: "查看 Failover 状态"
+    description: "显示 ASA HA failover 状态"
+    command: "show failover"
+
+  - id: show_failover_state
+    name: "查看 Failover 详细状态"
+    description: "显示 failover 详细切换状态"
+    command: "show failover state"
+
+  - id: show_vpn_sessiondb
+    name: "查看 VPN 会话汇总"
+    description: "显示 VPN 会话数据库汇总"
+    command: "show vpn-sessiondb"
+
+  - id: show_vpn_sessiondb_anyconnect
+    name: "查看 AnyConnect 会话"
+    description: "显示 AnyConnect VPN 会话"
+    command: "show vpn-sessiondb anyconnect"
+
+  - id: show_crypto_ipsec_sa
+    name: "查看 IPSec SA"
+    description: "显示 IPSec 安全关联"
+    command: "show crypto ipsec sa"
+
+  - id: show_crypto_isakmp_sa
+    name: "查看 ISAKMP SA"
+    description: "显示 IKE 安全关联"
+    command: "show crypto isakmp sa"
+
+  - id: show_crypto_ikev2_sa
+    name: "查看 IKEv2 SA"
+    description: "显示 IKEv2 安全关联"
+    command: "show crypto ikev2 sa"
+
+  - id: show_logging
+    name: "查看日志"
+    description: "显示日志缓冲区"
+    command: "show logging"
+
+  - id: show_running_config
+    name: "查看运行配置"
+    description: "显示运行配置"
+    command: "show running-config"
+
+  - id: ping_ip
+    name: "Ping 测试"
+    description: "Ping 指定 IP 地址"
+    command: "ping {ip_address}"
+    params:
+      - name: ip_address
+        type: ip_address
+        description: "目标 IP 地址"
+
+  - id: traceroute_ip
+    name: "路由追踪"
+    description: "路由追踪到目标 IP"
+    command: "traceroute {ip_address}"
+    params:
+      - name: ip_address
+        type: ip_address
+        description: "目标 IP 地址"
+
+# ── Cisco NX-OS ──────────────────────────────────────────────
+cisco_nxos:
+  - id: show_version
+    name: "查看系统版本"
+    description: "显示 NX-OS 版本、硬件信息"
+    command: "show version"
+
+  - id: show_inventory
+    name: "查看硬件清单"
+    description: "显示硬件清单和序列号"
+    command: "show inventory"
+
+  - id: show_module
+    name: "查看模块"
+    description: "显示线卡和 Supervisor 模块状态"
+    command: "show module"
+
+  - id: show_system_resources
+    name: "查看系统资源"
+    description: "显示 CPU、内存使用情况"
+    command: "show system resources"
+
+  - id: show_environment
+    name: "查看环境状态"
+    description: "显示温度、电源、风扇"
+    command: "show environment"
+
+  - id: show_clock
+    name: "查看时间"
+    description: "显示系统时间"
+    command: "show clock"
+
+  - id: show_ip_interface_brief
+    name: "查看接口 IP 摘要"
+    description: "显示接口 IP 和状态摘要"
+    command: "show ip interface brief"
+
+  - id: show_interface_status
+    name: "查看接口状态"
+    description: "显示接口状态、速率、VLAN"
+    command: "show interface status"
+
+  - id: show_interface_detail
+    name: "查看接口详情"
+    description: "显示指定接口详细信息"
+    command: "show interface {interface}"
+    params:
+      - name: interface
+        type: string
+        description: "接口名称"
+        pattern: "^[A-Za-z][A-Za-z0-9/\\-\\.]+$"
+
+  - id: show_interface_counters
+    name: "查看接口计数器"
+    description: "显示接口流量和错误计数"
+    command: "show interface counters"
+
+  - id: show_interface_transceiver
+    name: "查看光模块"
+    description: "显示光模块型号和光功率"
+    command: "show interface transceiver"
+
+  - id: show_vlan
+    name: "查看 VLAN"
+    description: "显示所有 VLAN"
+    command: "show vlan"
+
+  - id: show_mac_address_table
+    name: "查看 MAC 地址表"
+    description: "显示 MAC 地址表"
+    command: "show mac address-table"
+
+  - id: show_spanning_tree
+    name: "查看生成树"
+    description: "显示 STP 状态"
+    command: "show spanning-tree"
+
+  - id: show_vpc
+    name: "查看 vPC 状态"
+    description: "显示 vPC 域和角色状态"
+    command: "show vpc"
+
+  - id: show_vpc_brief
+    name: "查看 vPC 摘要"
+    description: "显示 vPC 摘要信息"
+    command: "show vpc brief"
+
+  - id: show_vpc_peer_keepalive
+    name: "查看 vPC Keepalive"
+    description: "显示 vPC peer-keepalive 状态"
+    command: "show vpc peer-keepalive"
+
+  - id: show_vpc_consistency_parameters
+    name: "查看 vPC 一致性"
+    description: "显示 vPC 全局一致性参数"
+    command: "show vpc consistency-parameters global"
+
+  - id: show_port_channel_summary
+    name: "查看端口聚合"
+    description: "显示 Port-channel 汇总"
+    command: "show port-channel summary"
+
+  - id: show_port_channel_database
+    name: "查看端口聚合数据库"
+    description: "显示 Port-channel 数据库"
+    command: "show port-channel database"
+
+  - id: show_ip_route
+    name: "查看路由表"
+    description: "显示 IP 路由表"
+    command: "show ip route"
+
+  - id: show_ip_route_summary
+    name: "查看路由表摘要"
+    description: "显示路由条数统计"
+    command: "show ip route summary"
+
+  - id: show_ip_arp
+    name: "查看 ARP 表"
+    description: "显示 ARP 缓存"
+    command: "show ip arp"
+
+  - id: show_ip_ospf_neighbor
+    name: "查看 OSPF 邻居"
+    description: "显示 OSPF 邻居"
+    command: "show ip ospf neighbor"
+
+  - id: show_ip_bgp_summary
+    name: "查看 BGP 摘要"
+    description: "显示 BGP 邻居和路由数量"
+    command: "show ip bgp summary"
+
+  - id: show_cdp_neighbors
+    name: "查看 CDP 邻居"
+    description: "显示 CDP 邻居"
+    command: "show cdp neighbors"
+
+  - id: show_lldp_neighbors
+    name: "查看 LLDP 邻居"
+    description: "显示 LLDP 邻居"
+    command: "show lldp neighbors"
+
+  - id: show_logging
+    name: "查看日志"
+    description: "显示系统日志"
+    command: "show logging last 100"
+
+  - id: show_running_config
+    name: "查看运行配置"
+    description: "显示运行配置"
+    command: "show running-config"
+
+  - id: ping_ip
+    name: "Ping 测试"
+    description: "Ping 指定 IP"
+    command: "ping {ip_address}"
+    params:
+      - name: ip_address
+        type: ip_address
+        description: "目标 IP 地址"
+
+  - id: traceroute_ip
+    name: "路由追踪"
+    description: "追踪到目标 IP 的路由"
+    command: "traceroute {ip_address}"
+    params:
+      - name: ip_address
+        type: ip_address
+        description: "目标 IP 地址"
+
+# ── Huawei VRP ───────────────────────────────────────────────
+huawei:
+  - id: display_version
+    name: "查看系统版本"
+    description: "显示设备版本、运行时间"
+    command: "display version"
+
+  - id: display_device
+    name: "查看设备信息"
+    description: "显示设备型号和板卡信息"
+    command: "display device"
+
+  - id: display_elabel
+    name: "查看电子标签"
+    description: "显示设备序列号和电子标签"
+    command: "display elabel brief"
+
+  - id: display_clock
+    name: "查看时间"
+    description: "显示系统时间"
+    command: "display clock"
+
+  - id: display_cpu_usage
+    name: "查看 CPU 使用率"
+    description: "显示 CPU 使用率"
+    command: "display cpu-usage"
+
+  - id: display_memory_usage
+    name: "查看内存使用"
+    description: "显示内存使用情况"
+    command: "display memory-usage"
+
+  - id: display_health
+    name: "查看设备健康"
+    description: "显示设备健康状态（温度、电源、风扇）"
+    command: "display health"
+
+  - id: display_environment
+    name: "查看环境"
+    description: "显示温度和电源信息"
+    command: "display environment"
+
+  - id: display_ip_interface_brief
+    name: "查看接口 IP 摘要"
+    description: "显示接口 IP 和状态摘要"
+    command: "display ip interface brief"
+
+  - id: display_interface_brief
+    name: "查看接口摘要"
+    description: "显示所有接口状态摘要"
+    command: "display interface brief"
+
+  - id: display_interface_detail
+    name: "查看指定接口详情"
+    description: "显示指定接口的详细信息"
+    command: "display interface {interface}"
+    params:
+      - name: interface
+        type: string
+        description: "接口名称，如 GigabitEthernet0/0/1"
+        pattern: "^[A-Za-z][A-Za-z0-9/\\-\\.]+$"
+
+  - id: display_interface_description
+    name: "查看接口描述"
+    description: "显示所有接口描述"
+    command: "display interface description"
+
+  - id: display_transceiver
+    name: "查看光模块"
+    description: "显示光模块信息和光功率"
+    command: "display transceiver"
+
+  - id: display_port_vlan
+    name: "查看端口 VLAN"
+    description: "显示端口 VLAN 分配"
+    command: "display port vlan"
+
+  - id: display_vlan
+    name: "查看 VLAN"
+    description: "显示所有 VLAN 信息"
+    command: "display vlan"
+
+  - id: display_vlan_id
+    name: "查看指定 VLAN"
+    description: "显示指定 VLAN 详情"
+    command: "display vlan {vlan_id}"
+    params:
+      - name: vlan_id
+        type: integer
+        description: "VLAN ID"
+        min: 1
+        max: 4094
+
+  - id: display_mac_table
+    name: "查看 MAC 地址表"
+    description: "显示 MAC 地址表"
+    command: "display mac-address"
+
+  - id: display_stp
+    name: "查看生成树"
+    description: "显示 STP 状态"
+    command: "display stp brief"
+
+  - id: display_eth_trunk
+    name: "查看链路聚合"
+    description: "显示 Eth-Trunk 汇总"
+    command: "display eth-trunk"
+
+  - id: display_ip_routing_table
+    name: "查看路由表"
+    description: "显示 IP 路由表"
+    command: "display ip routing-table"
+
+  - id: display_ip_routing_table_dest
+    name: "查看指定路由"
+    description: "查看到指定网络的路由"
+    command: "display ip routing-table {network}"
+    params:
+      - name: network
+        type: ip_address
+        description: "目标 IP 地址"
+
+  - id: display_ip_routing_table_stat
+    name: "查看路由统计"
+    description: "显示路由表统计信息"
+    command: "display ip routing-table statistics"
+
+  - id: display_arp
+    name: "查看 ARP 表"
+    description: "显示 ARP 表"
+    command: "display arp"
+
+  - id: display_ospf_peer
+    name: "查看 OSPF 邻居"
+    description: "显示 OSPF 邻居关系"
+    command: "display ospf peer"
+
+  - id: display_ospf_brief
+    name: "查看 OSPF 摘要"
+    description: "显示 OSPF 进程摘要"
+    command: "display ospf brief"
+
+  - id: display_ospf_lsdb
+    name: "查看 OSPF LSDB"
+    description: "显示 OSPF 链路状态数据库"
+    command: "display ospf lsdb"
+
+  - id: display_bgp_peer
+    name: "查看 BGP 邻居"
+    description: "显示 BGP 邻居"
+    command: "display bgp peer"
+
+  - id: display_bgp_routing_table
+    name: "查看 BGP 路由"
+    description: "显示 BGP 路由表"
+    command: "display bgp routing-table"
+
+  - id: display_lldp_neighbor
+    name: "查看 LLDP 邻居"
+    description: "显示 LLDP 邻居"
+    command: "display lldp neighbor"
+
+  - id: display_lldp_neighbor_brief
+    name: "查看 LLDP 邻居摘要"
+    description: "显示 LLDP 邻居摘要"
+    command: "display lldp neighbor brief"
+
+  - id: display_vrrp
+    name: "查看 VRRP"
+    description: "显示 VRRP 状态"
+    command: "display vrrp"
+
+  - id: display_vrrp_brief
+    name: "查看 VRRP 摘要"
+    description: "显示 VRRP 摘要"
+    command: "display vrrp brief"
+
+  - id: display_ntp_status
+    name: "查看 NTP 状态"
+    description: "显示 NTP 同步状态"
+    command: "display ntp-service status"
+
+  - id: display_acl_all
+    name: "查看 ACL"
+    description: "显示所有 ACL"
+    command: "display acl all"
+
+  - id: display_current_configuration
+    name: "查看运行配置"
+    description: "显示当前配置"
+    command: "display current-configuration"
+
+  - id: display_saved_configuration
+    name: "查看保存配置"
+    description: "显示已保存配置"
+    command: "display saved-configuration"
+
+  - id: display_current_interface
+    name: "查看接口配置"
+    description: "显示指定接口配置"
+    command: "display current-configuration interface {interface}"
+    params:
+      - name: interface
+        type: string
+        description: "接口名称"
+        pattern: "^[A-Za-z][A-Za-z0-9/\\-\\.]+$"
+
+  - id: ping_ip
+    name: "Ping 测试"
+    description: "Ping 指定 IP"
+    command: "ping {ip_address}"
+    params:
+      - name: ip_address
+        type: ip_address
+        description: "目标 IP 地址"
+
+  - id: tracert_ip
+    name: "路由追踪"
+    description: "追踪路由"
+    command: "tracert {ip_address}"
+    params:
+      - name: ip_address
+        type: ip_address
+        description: "目标 IP 地址"
+
+  - id: display_logbuffer
+    name: "查看日志"
+    description: "显示日志缓冲区"
+    command: "display logbuffer"
+
+  - id: display_users
+    name: "查看在线用户"
+    description: "显示当前在线用户"
+    command: "display users"
+
+  - id: display_ap_all
+    name: "查看所有 AP"
+    description: "显示所有 AP 状态"
+    command: "display ap all"
+
+  - id: display_station_all
+    name: "查看无线客户端"
+    description: "显示所有无线客户端"
+    command: "display station all"
+
+  - id: display_wlan_all
+    name: "查看 WLAN 配置"
+    description: "显示所有 WLAN 配置"
+    command: "display wlan all"
+
+# ── H3C Comware ──────────────────────────────────────────────
+h3c:
+  - id: display_version
+    name: "查看系统版本"
+    description: "显示设备版本信息"
+    command: "display version"
+
+  - id: display_device_manuinfo
+    name: "查看设备制造信息"
+    description: "显示序列号和制造信息"
+    command: "display device manuinfo"
+
+  - id: display_device
+    name: "查看设备状态"
+    description: "显示设备和板卡状态"
+    command: "display device"
+
+  - id: display_clock
+    name: "查看时间"
+    description: "显示系统时间"
+    command: "display clock"
+
+  - id: display_cpu_usage
+    name: "查看 CPU"
+    description: "显示 CPU 使用率"
+    command: "display cpu-usage"
+
+  - id: display_memory
+    name: "查看内存"
+    description: "显示内存使用情况"
+    command: "display memory"
+
+  - id: display_environment
+    name: "查看环境"
+    description: "显示温度、电源、风扇状态"
+    command: "display environment"
+
+  - id: display_ip_interface_brief
+    name: "查看接口 IP 摘要"
+    description: "显示接口 IP 和状态"
+    command: "display ip interface brief"
+
+  - id: display_interface_brief
+    name: "查看接口摘要"
+    description: "显示所有接口状态摘要"
+    command: "display interface brief"
+
+  - id: display_interface_detail
+    name: "查看接口详情"
+    description: "显示指定接口详细信息"
+    command: "display interface {interface}"
+    params:
+      - name: interface
+        type: string
+        description: "接口名称，如 GigabitEthernet1/0/1"
+        pattern: "^[A-Za-z][A-Za-z0-9/\\-\\.]+$"
+
+  - id: display_transceiver_interface
+    name: "查看光模块"
+    description: "显示光模块信息"
+    command: "display transceiver interface"
+
+  - id: display_vlan_all
+    name: "查看 VLAN"
+    description: "显示所有 VLAN"
+    command: "display vlan all"
+
+  - id: display_vlan_id
+    name: "查看指定 VLAN"
+    description: "显示指定 VLAN 详情"
+    command: "display vlan {vlan_id}"
+    params:
+      - name: vlan_id
+        type: integer
+        description: "VLAN ID"
+        min: 1
+        max: 4094
+
+  - id: display_mac_table
+    name: "查看 MAC 表"
+    description: "显示 MAC 地址表"
+    command: "display mac-address"
+
+  - id: display_stp
+    name: "查看生成树"
+    description: "显示 STP 状态"
+    command: "display stp brief"
+
+  - id: display_link_aggregation
+    name: "查看链路聚合"
+    description: "显示链路聚合信息"
+    command: "display link-aggregation summary"
+
+  - id: display_ip_routing_table
+    name: "查看路由表"
+    description: "显示 IP 路由表"
+    command: "display ip routing-table"
+
+  - id: display_ip_routing_table_dest
+    name: "查看指定路由"
+    description: "查看到指定地址的路由"
+    command: "display ip routing-table {network}"
+    params:
+      - name: network
+        type: ip_address
+        description: "目标 IP 地址"
+
+  - id: display_arp
+    name: "查看 ARP 表"
+    description: "显示 ARP 表"
+    command: "display arp"
+
+  - id: display_ospf_peer
+    name: "查看 OSPF 邻居"
+    description: "显示 OSPF 邻居"
+    command: "display ospf peer"
+
+  - id: display_ospf_brief
+    name: "查看 OSPF 摘要"
+    description: "显示 OSPF 进程摘要"
+    command: "display ospf brief"
+
+  - id: display_bgp_peer
+    name: "查看 BGP 邻居"
+    description: "显示 BGP 邻居"
+    command: "display bgp peer"
+
+  - id: display_lldp_neighbor_information
+    name: "查看 LLDP 邻居"
+    description: "显示 LLDP 邻居详情"
+    command: "display lldp neighbor-information"
+
+  - id: display_acl_all
+    name: "查看 ACL"
+    description: "显示所有 ACL"
+    command: "display acl all"
+
+  - id: display_current_configuration
+    name: "查看运行配置"
+    description: "显示当前配置"
+    command: "display current-configuration"
+
+  - id: display_saved_configuration
+    name: "查看保存配置"
+    description: "显示已保存配置"
+    command: "display saved-configuration"
+
+  - id: ping_ip
+    name: "Ping 测试"
+    description: "Ping 指定 IP"
+    command: "ping {ip_address}"
+    params:
+      - name: ip_address
+        type: ip_address
+        description: "目标 IP 地址"
+
+  - id: tracert_ip
+    name: "路由追踪"
+    description: "追踪路由"
+    command: "tracert {ip_address}"
+    params:
+      - name: ip_address
+        type: ip_address
+        description: "目标 IP 地址"
+
+  - id: display_logbuffer
+    name: "查看日志"
+    description: "显示日志缓冲区"
+    command: "display logbuffer"
+
+  - id: display_users
+    name: "查看在线用户"
+    description: "显示在线用户"
+    command: "display users"
+
+  - id: display_wlan_ap_all
+    name: "查看所有 AP"
+    description: "显示所有 WLAN AP"
+    command: "display wlan ap all"
+
+  - id: display_wlan_client
+    name: "查看无线客户端"
+    description: "显示无线客户端信息"
+    command: "display wlan client"
+
+  - id: display_wlan_service_template_all
+    name: "查看 WLAN 服务模板"
+    description: "显示所有 WLAN 服务模板"
+    command: "display wlan service-template all"
+
+# ── Fortinet FortiGate ───────────────────────────────────────
+fortinet:
+  - id: get_system_status
+    name: "查看系统状态"
+    description: "显示固件版本、序列号、运行时间"
+    command: "get system status"
+
+  - id: get_system_performance_status
+    name: "查看系统性能"
+    description: "显示 CPU、内存、会话数"
+    command: "get system performance status"
+
+  - id: get_hardware_status
+    name: "查看硬件状态"
+    description: "显示硬件型号和状态"
+    command: "get hardware status"
+
+  - id: get_system_interface_physical
+    name: "查看物理接口"
+    description: "显示物理接口状态和统计"
+    command: "get system interface physical"
+
+  - id: diagnose_netlink_interface_list
+    name: "查看接口列表"
+    description: "显示所有网络接口及其状态"
+    command: "diagnose netlink interface list"
+
+  - id: get_router_info_routing_table_all
+    name: "查看路由表"
+    description: "显示完整路由表"
+    command: "get router info routing-table all"
+
+  - id: get_router_info_ospf_neighbor
+    name: "查看 OSPF 邻居"
+    description: "显示 OSPF 邻居"
+    command: "get router info ospf neighbor"
+
+  - id: get_router_info_bgp_summary
+    name: "查看 BGP 摘要"
+    description: "显示 BGP 邻居汇总"
+    command: "get router info bgp summary"
+
+  - id: get_system_arp
+    name: "查看 ARP 表"
+    description: "显示 ARP 缓存"
+    command: "get system arp"
+
+  - id: get_firewall_policy
+    name: "查看防火墙策略"
+    description: "显示防火墙策略列表"
+    command: "get firewall policy"
+
+  - id: diagnose_sys_session_stat
+    name: "查看会话统计"
+    description: "显示防火墙会话统计"
+    command: "diagnose sys session stat"
+
+  - id: get_firewall_addrgrp
+    name: "查看地址组"
+    description: "显示防火墙地址组"
+    command: "get firewall addrgrp"
+
+  - id: get_vpn_ipsec_tunnel_summary
+    name: "查看 IPSec 隧道"
+    description: "显示 IPSec VPN 隧道摘要"
+    command: "get vpn ipsec tunnel summary"
+
+  - id: get_vpn_ssl_monitor
+    name: "查看 SSL VPN 监控"
+    description: "显示 SSL VPN 在线用户"
+    command: "get vpn ssl monitor"
+
+  - id: get_system_ha_status
+    name: "查看 HA 状态"
+    description: "显示高可用状态"
+    command: "get system ha status"
+
+  - id: diagnose_sys_ha_status
+    name: "查看 HA 诊断"
+    description: "显示 HA 详细诊断信息"
+    command: "diagnose sys ha status"
+
+  - id: execute_ping
+    name: "Ping 测试"
+    description: "Ping 指定 IP"
+    command: "execute ping {ip_address}"
+    params:
+      - name: ip_address
+        type: ip_address
+        description: "目标 IP 地址"
+
+  - id: execute_traceroute
+    name: "路由追踪"
+    description: "追踪路由"
+    command: "execute traceroute {ip_address}"
+    params:
+      - name: ip_address
+        type: ip_address
+        description: "目标 IP 地址"
+
+  - id: get_system_dns
+    name: "查看 DNS 配置"
+    description: "显示 DNS 服务器配置"
+    command: "get system dns"
+
+  - id: diagnose_log_test
+    name: "查看日志测试"
+    description: "显示日志连通性测试"
+    command: "diagnose log test"
+
+# ── Aruba 无线控制器 ─────────────────────────────────────────
+aruba:
+  - id: show_version
+    name: "查看系统版本"
+    description: "显示控制器版本和硬件信息"
+    command: "show version"
+
+  - id: show_inventory
+    name: "查看硬件清单"
+    description: "显示硬件清单"
+    command: "show inventory"
+
+  - id: show_switchinfo
+    name: "查看控制器信息"
+    description: "显示控制器基本信息"
+    command: "show switchinfo"
+
+  - id: show_clock
+    name: "查看时间"
+    description: "显示系统时间"
+    command: "show clock"
+
+  - id: show_ip_interface_brief
+    name: "查看接口 IP 摘要"
+    description: "显示接口 IP 和状态"
+    command: "show ip interface brief"
+
+  - id: show_interface_status
+    name: "查看接口状态"
+    description: "显示端口状态"
+    command: "show interface status"
+
+  - id: show_ap_database
+    name: "查看 AP 数据库"
+    description: "显示所有 AP 列表和状态"
+    command: "show ap database"
+
+  - id: show_ap_active
+    name: "查看活跃 AP"
+    description: "显示在线 AP 列表"
+    command: "show ap active"
+
+  - id: show_ap_radio_summary
+    name: "查看 AP 射频摘要"
+    description: "显示 AP 射频状态汇总"
+    command: "show ap radio-summary"
+
+  - id: show_ap_bss_table
+    name: "查看 AP BSS 表"
+    description: "显示 AP BSS 信息"
+    command: "show ap bss-table"
+
+  - id: show_ap_association
+    name: "查看 AP 关联"
+    description: "显示 AP 与客户端关联信息"
+    command: "show ap association"
+
+  - id: show_user_table
+    name: "查看用户表"
+    description: "显示在线无线用户列表"
+    command: "show user-table"
+
+  - id: show_station_table
+    name: "查看站点表"
+    description: "显示无线站点信息"
+    command: "show station-table"
+
+  - id: show_wlan_ssid_profile
+    name: "查看 SSID 配置"
+    description: "显示 SSID 配置文件"
+    command: "show wlan ssid-profile"
+
+  - id: show_wlan_virtual_ap
+    name: "查看虚拟 AP"
+    description: "显示虚拟 AP 配置"
+    command: "show wlan virtual-ap"
+
+  - id: show_datapath_session
+    name: "查看数据路径会话"
+    description: "显示数据路径会话表"
+    command: "show datapath session"
+
+  - id: show_running_config
+    name: "查看运行配置"
+    description: "显示运行配置"
+    command: "show running-config"
+
+  - id: ping_ip
+    name: "Ping 测试"
+    description: "Ping 指定 IP"
+    command: "ping {ip_address}"
+    params:
+      - name: ip_address
+        type: ip_address
+        description: "目标 IP 地址"
+
+  - id: traceroute_ip
+    name: "路由追踪"
+    description: "追踪路由"
+    command: "traceroute {ip_address}"
+    params:
+      - name: ip_address
+        type: ip_address
+        description: "目标 IP 地址"
+
+# ── Juniper JunOS ────────────────────────────────────────────
+juniper:
+  - id: show_version
+    name: "查看系统版本"
+    description: "显示 JunOS 版本和硬件信息"
+    command: "show version"
+
+  - id: show_system_information
+    name: "查看系统信息"
+    description: "显示设备型号、序列号"
+    command: "show system information"
+
+  - id: show_chassis_hardware
+    name: "查看硬件信息"
+    description: "显示机箱硬件和模块"
+    command: "show chassis hardware"
+
+  - id: show_system_uptime
+    name: "查看运行时间"
+    description: "显示系统运行时间"
+    command: "show system uptime"
+
+  - id: show_chassis_environment
+    name: "查看环境状态"
+    description: "显示温度、电源、风扇"
+    command: "show chassis environment"
+
+  - id: show_chassis_alarms
+    name: "查看告警"
+    description: "显示机箱告警"
+    command: "show chassis alarms"
+
+  - id: show_system_processes
+    name: "查看系统进程"
+    description: "显示进程和资源使用"
+    command: "show system processes summary"
+
+  - id: show_chassis_routing_engine
+    name: "查看路由引擎"
+    description: "显示路由引擎 CPU、内存"
+    command: "show chassis routing-engine"
+
+  - id: show_interfaces_terse
+    name: "查看接口摘要"
+    description: "显示接口状态和 IP 地址"
+    command: "show interfaces terse"
+
+  - id: show_interface_detail
+    name: "查看接口详情"
+    description: "显示指定接口详细信息"
+    command: "show interfaces {interface}"
+    params:
+      - name: interface
+        type: string
+        description: "接口名称，如 ge-0/0/0"
+        pattern: "^[A-Za-z][A-Za-z0-9/\\-\\.]+$"
+
+  - id: show_interfaces_descriptions
+    name: "查看接口描述"
+    description: "显示接口描述"
+    command: "show interfaces descriptions"
+
+  - id: show_route
+    name: "查看路由表"
+    description: "显示路由表"
+    command: "show route"
+
+  - id: show_route_dest
+    name: "查看指定路由"
+    description: "查看指定目的的路由"
+    command: "show route {network}"
+    params:
+      - name: network
+        type: ip_address
+        description: "目标 IP 地址"
+
+  - id: show_route_summary
+    name: "查看路由摘要"
+    description: "显示路由表统计"
+    command: "show route summary"
+
+  - id: show_arp
+    name: "查看 ARP 表"
+    description: "显示 ARP 缓存"
+    command: "show arp"
+
+  - id: show_ospf_neighbor
+    name: "查看 OSPF 邻居"
+    description: "显示 OSPF 邻居"
+    command: "show ospf neighbor"
+
+  - id: show_ospf_interface
+    name: "查看 OSPF 接口"
+    description: "显示 OSPF 接口信息"
+    command: "show ospf interface"
+
+  - id: show_bgp_summary
+    name: "查看 BGP 摘要"
+    description: "显示 BGP 邻居汇总"
+    command: "show bgp summary"
+
+  - id: show_bgp_neighbor
+    name: "查看 BGP 邻居"
+    description: "显示 BGP 邻居详情"
+    command: "show bgp neighbor"
+
+  - id: show_security_zones
+    name: "查看安全域"
+    description: "显示安全域配置"
+    command: "show security zones"
+
+  - id: show_security_policies
+    name: "查看安全策略"
+    description: "显示安全策略"
+    command: "show security policies"
+
+  - id: show_security_flow_session
+    name: "查看会话表"
+    description: "显示安全流会话表"
+    command: "show security flow session"
+
+  - id: show_security_ipsec_sa
+    name: "查看 IPSec SA"
+    description: "显示 IPSec 安全关联"
+    command: "show security ipsec security-associations"
+
+  - id: show_chassis_cluster_status
+    name: "查看集群状态"
+    description: "显示机箱集群 HA 状态"
+    command: "show chassis cluster status"
+
+  - id: show_chassis_cluster_interfaces
+    name: "查看集群接口"
+    description: "显示集群冗余接口"
+    command: "show chassis cluster interfaces"
+
+  - id: show_lldp_neighbors
+    name: "查看 LLDP 邻居"
+    description: "显示 LLDP 邻居"
+    command: "show lldp neighbors"
+
+  - id: ping_ip
+    name: "Ping 测试"
+    description: "Ping 指定 IP"
+    command: "ping {ip_address} count 5"
+    params:
+      - name: ip_address
+        type: ip_address
+        description: "目标 IP 地址"
+
+  - id: traceroute_ip
+    name: "路由追踪"
+    description: "追踪路由"
+    command: "traceroute {ip_address}"
+    params:
+      - name: ip_address
+        type: ip_address
+        description: "目标 IP 地址"
+
+  - id: show_log_messages
+    name: "查看日志"
+    description: "显示系统日志"
+    command: "show log messages | last 100"
+
+  - id: show_configuration
+    name: "查看配置"
+    description: "显示运行配置"
+    command: "show configuration"
+
+# ── 锐捷 Ruijie OS ──────────────────────────────────────────
+ruijie:
+  - id: show_version
+    name: "查看系统版本"
+    description: "显示设备版本和运行时间"
+    command: "show version"
+
+  - id: show_inventory
+    name: "查看硬件清单"
+    description: "显示硬件信息和序列号"
+    command: "show inventory"
+
+  - id: show_clock
+    name: "查看时间"
+    description: "显示系统时间"
+    command: "show clock"
+
+  - id: show_cpu
+    name: "查看 CPU"
+    description: "显示 CPU 使用率"
+    command: "show cpu"
+
+  - id: show_memory
+    name: "查看内存"
+    description: "显示内存使用"
+    command: "show memory"
+
+  - id: show_environment
+    name: "查看环境"
+    description: "显示温度和电源状态"
+    command: "show environment"
+
+  - id: show_ip_interface_brief
+    name: "查看接口 IP 摘要"
+    description: "显示接口 IP 和状态"
+    command: "show ip interface brief"
+
+  - id: show_interfaces_status
+    name: "查看接口状态"
+    description: "显示接口状态和速率"
+    command: "show interfaces status"
+
+  - id: show_interface_detail
+    name: "查看接口详情"
+    description: "显示指定接口详情"
+    command: "show interfaces {interface}"
+    params:
+      - name: interface
+        type: string
+        description: "接口名称"
+        pattern: "^[A-Za-z][A-Za-z0-9/\\-\\.]+$"
+
+  - id: show_vlan
+    name: "查看 VLAN"
+    description: "显示 VLAN 列表"
+    command: "show vlan"
+
+  - id: show_mac_address_table
+    name: "查看 MAC 表"
+    description: "显示 MAC 地址表"
+    command: "show mac-address-table"
+
+  - id: show_spanning_tree
+    name: "查看生成树"
+    description: "显示 STP 状态"
+    command: "show spanning-tree"
+
+  - id: show_aggregateport_summary
+    name: "查看端口聚合"
+    description: "显示聚合端口摘要"
+    command: "show aggregateport summary"
+
+  - id: show_ip_route
+    name: "查看路由表"
+    description: "显示 IP 路由表"
+    command: "show ip route"
+
+  - id: show_ip_arp
+    name: "查看 ARP 表"
+    description: "显示 ARP 缓存"
+    command: "show arp"
+
+  - id: show_ip_ospf_neighbor
+    name: "查看 OSPF 邻居"
+    description: "显示 OSPF 邻居"
+    command: "show ip ospf neighbor"
+
+  - id: show_ip_bgp_summary
+    name: "查看 BGP 摘要"
+    description: "显示 BGP 邻居汇总"
+    command: "show ip bgp summary"
+
+  - id: show_lldp_neighbors
+    name: "查看 LLDP 邻居"
+    description: "显示 LLDP 邻居"
+    command: "show lldp neighbors"
+
+  - id: ping_ip
+    name: "Ping 测试"
+    description: "Ping 指定 IP"
+    command: "ping {ip_address}"
+    params:
+      - name: ip_address
+        type: ip_address
+        description: "目标 IP 地址"
+
+  - id: traceroute_ip
+    name: "路由追踪"
+    description: "追踪路由"
+    command: "traceroute {ip_address}"
+    params:
+      - name: ip_address
+        type: ip_address
+        description: "目标 IP 地址"
+
+  - id: show_running_config
+    name: "查看运行配置"
+    description: "显示运行配置"
+    command: "show running-config"
+
+  - id: show_logging
+    name: "查看日志"
+    description: "显示系统日志"
+    command: "show logging"
+
+# ── Ruckus FastIron / ICX ────────────────────────────────────
+ruckus:
+  - id: show_version
+    name: "查看系统版本"
+    description: "显示版本和硬件信息"
+    command: "show version"
+
+  - id: show_flash
+    name: "查看 Flash"
+    description: "显示 Flash 存储"
+    command: "show flash"
+
+  - id: show_chassis
+    name: "查看机箱"
+    description: "显示机箱和模块信息"
+    command: "show chassis"
+
+  - id: show_clock
+    name: "查看时间"
+    description: "显示系统时间"
+    command: "show clock"
+
+  - id: show_cpu_usage
+    name: "查看 CPU"
+    description: "显示 CPU 使用率"
+    command: "show cpu-usage"
+
+  - id: show_memory
+    name: "查看内存"
+    description: "显示内存使用"
+    command: "show memory"
+
+  - id: show_ip_interface_brief
+    name: "查看接口 IP 摘要"
+    description: "显示接口 IP 和状态"
+    command: "show ip interface brief"
+
+  - id: show_interfaces_brief
+    name: "查看接口摘要"
+    description: "显示所有接口状态摘要"
+    command: "show interfaces brief"
+
+  - id: show_interface_detail
+    name: "查看接口详情"
+    description: "显示指定接口详情"
+    command: "show interfaces {interface}"
+    params:
+      - name: interface
+        type: string
+        description: "接口名称"
+        pattern: "^[A-Za-z][A-Za-z0-9/\\-\\.]+$"
+
+  - id: show_vlan
+    name: "查看 VLAN"
+    description: "显示 VLAN 列表"
+    command: "show vlan"
+
+  - id: show_mac_address
+    name: "查看 MAC 表"
+    description: "显示 MAC 地址表"
+    command: "show mac-address"
+
+  - id: show_spanning_tree
+    name: "查看生成树"
+    description: "显示 STP 状态"
+    command: "show spanning-tree"
+
+  - id: show_trunk
+    name: "查看 Trunk"
+    description: "显示 Trunk 端口组"
+    command: "show trunk"
+
+  - id: show_ip_route
+    name: "查看路由表"
+    description: "显示 IP 路由表"
+    command: "show ip route"
+
+  - id: show_arp
+    name: "查看 ARP 表"
+    description: "显示 ARP 缓存"
+    command: "show arp"
+
+  - id: show_ip_ospf_neighbor
+    name: "查看 OSPF 邻居"
+    description: "显示 OSPF 邻居"
+    command: "show ip ospf neighbor"
+
+  - id: show_lldp_neighbors
+    name: "查看 LLDP 邻居"
+    description: "显示 LLDP 邻居"
+    command: "show lldp neighbors"
+
+  - id: ping_ip
+    name: "Ping 测试"
+    description: "Ping 指定 IP"
+    command: "ping {ip_address}"
+    params:
+      - name: ip_address
+        type: ip_address
+        description: "目标 IP 地址"
+
+  - id: traceroute_ip
+    name: "路由追踪"
+    description: "追踪路由"
+    command: "traceroute {ip_address}"
+    params:
+      - name: ip_address
+        type: ip_address
+        description: "目标 IP 地址"
+
+  - id: show_running_config
+    name: "查看运行配置"
+    description: "显示运行配置"
+    command: "show running-config"
+
+  - id: show_logging
+    name: "查看日志"
+    description: "显示系统日志"
+    command: "show logging"
