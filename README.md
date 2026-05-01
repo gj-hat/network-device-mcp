@@ -42,13 +42,12 @@
 
 ## 安全机制
 
-采用 5 层纵深防御，所有校验在 SSH 连接建立**之前**完成：
+所有校验在 SSH 连接建立**之前**完成：
 
 1. **封闭命令集** — AI 只能从 `config/commands.yaml` 中选择命令，不能自由输入
 2. **参数类型校验** — ip_address（IPv4 校验）/ string（正则匹配）/ integer（范围约束）
 3. **注入字符拦截** — 参数值禁止 `; | & $ \n` 等 Shell 特殊字符
 4. **服务端拼装** — 命令主体锁死在配置文件中，AI 只能补充参数值
-5. **兜底黑名单** — 拼装后的命令仍检查 `configure`、`system-view`、`delete`、`reboot` 等危险关键词
 
 被拦截的操作会记录到审计日志（`logs/audit.log`），每行一条 JSON。
 
@@ -69,8 +68,14 @@ cd network-device-mcp
 cp .env.example .env
 # 编辑 .env，填入 SSH 用户名和密码
 
-# 启动服务（首次自动创建 venv 并安装依赖）
+# 后台启动服务（首次自动创建 venv 并安装依赖）
 ./start.sh
+
+# 或前台 Debug 模式启动（日志直接输出到终端，Ctrl+C 停止）
+./start-debug.sh
+
+# 停止后台服务
+./stop.sh
 ```
 
 服务启动后监听 `http://0.0.0.0:8081/network-device-mcp`。
@@ -106,7 +111,11 @@ AI 会自动：
 
 ---
 
-## 4 个 MCP 工具
+## 接口文档
+
+本服务通过 MCP 协议对外暴露 4 个工具（Tool），AI 客户端通过 SSE 连接后即可调用。
+
+### 工具总览
 
 | 工具 | 用途 | 适用场景 |
 |------|------|---------|
@@ -115,9 +124,232 @@ AI 会自动：
 | `batch_execute_readonly_command` | 对多台设备并发执行同一条只读命令 | 批量查询 |
 | `execute_multi_commands` | 对单/多台设备执行多条只读命令（单连接） | 巡检 |
 
-### execute_multi_commands - 巡检场景
+---
 
-一次 SSH 连接执行多条命令，减少重复建连开销：
+### 1. list_available_commands
+
+查询指定设备类型可用的命令列表。AI 助手应先调用此工具了解可用命令（command_id），再执行查询。
+
+**参数：**
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+|------|------|------|--------|------|
+| `device_type` | string | 否 | `"cisco"` | 设备类型 |
+
+**请求示例：**
+
+```json
+{
+  "device_type": "huawei"
+}
+```
+
+**返回示例：**
+
+```json
+[
+  {
+    "command_id": "display_version",
+    "name": "查看版本信息",
+    "description": "显示设备软硬件版本信息",
+    "params": []
+  },
+  {
+    "command_id": "display_ip_interface_brief",
+    "name": "查看接口 IP 摘要",
+    "description": "显示所有接口的 IP 地址和状态",
+    "params": []
+  },
+  {
+    "command_id": "ping",
+    "name": "Ping 测试",
+    "description": "从设备 ping 指定 IP 地址",
+    "params": [
+      {
+        "name": "ip_address",
+        "type": "ip_address",
+        "required": true,
+        "description": "目标 IP 地址"
+      }
+    ]
+  }
+]
+```
+
+**错误返回：**
+
+```json
+{
+  "error": "不支持的设备类型: xxx，支持: aruba, cisco, cisco_asa, cisco_nxos, fortinet, h3c, huawei, juniper, ruijie, ruckus"
+}
+```
+
+---
+
+### 2. execute_readonly_command
+
+对单台设备执行一条只读命令，返回原始执行结果。
+
+**参数：**
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+|------|------|------|--------|------|
+| `host` | string | **是** | - | 设备 IP 地址 |
+| `command_id` | string | **是** | - | 命令标识（从 `list_available_commands` 获取） |
+| `device_type` | string | 否 | `"cisco"` | 设备类型 |
+| `params` | object | 否 | `null` | 命令参数，key-value 形式 |
+| `port` | integer | 否 | `22` | SSH 端口 |
+| `username` | string | 否 | `null` | SSH 用户名（覆盖服务端默认凭据） |
+| `password` | string | 否 | `null` | SSH 密码（覆盖服务端默认凭据） |
+
+**请求示例（无参数命令）：**
+
+```json
+{
+  "host": "192.168.1.1",
+  "device_type": "huawei",
+  "command_id": "display_version"
+}
+```
+
+**请求示例（带参数命令）：**
+
+```json
+{
+  "host": "192.168.1.1",
+  "device_type": "cisco",
+  "command_id": "ping",
+  "params": {
+    "ip_address": "10.0.0.1"
+  }
+}
+```
+
+**成功返回：**
+
+```json
+{
+  "host": "192.168.1.1",
+  "success": true,
+  "command_executed": "display version",
+  "output": "Huawei Versatile Routing Platform Software\nVRP (R) software, Version 5.170 ...",
+  "error": ""
+}
+```
+
+**失败返回：**
+
+```json
+{
+  "host": "192.168.1.1",
+  "success": false,
+  "command_executed": "display version",
+  "output": "",
+  "error": "连接超时: 192.168.1.1:22（超时 30s）"
+}
+```
+
+---
+
+### 3. batch_execute_readonly_command
+
+对多台设备并发执行同一条只读命令，汇总返回各设备的结果。
+
+- 命令校验只做一次，校验失败则所有设备都不执行
+- 各设备并发执行，单台失败不影响其他设备
+- 并发上限 50 台，超出部分排队等待
+
+**参数：**
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+|------|------|------|--------|------|
+| `hosts` | string[] | **是** | - | 设备 IP 地址列表 |
+| `command_id` | string | **是** | - | 命令标识 |
+| `device_type` | string | 否 | `"cisco"` | 设备类型 |
+| `params` | object | 否 | `null` | 命令参数 |
+| `port` | integer | 否 | `22` | SSH 端口 |
+| `username` | string | 否 | `null` | SSH 用户名（覆盖服务端默认凭据） |
+| `password` | string | 否 | `null` | SSH 密码（覆盖服务端默认凭据） |
+
+**请求示例：**
+
+```json
+{
+  "hosts": ["192.168.1.1", "192.168.1.2", "192.168.1.3"],
+  "device_type": "cisco",
+  "command_id": "show_version"
+}
+```
+
+**成功返回：**
+
+```json
+[
+  {
+    "host": "192.168.1.1",
+    "success": true,
+    "command_executed": "show version",
+    "output": "Cisco IOS Software ...",
+    "error": ""
+  },
+  {
+    "host": "192.168.1.2",
+    "success": true,
+    "command_executed": "show version",
+    "output": "Cisco IOS Software ...",
+    "error": ""
+  },
+  {
+    "host": "192.168.1.3",
+    "success": false,
+    "command_executed": "show version",
+    "output": "",
+    "error": "连接超时: 192.168.1.3:22（超时 30s）"
+  }
+]
+```
+
+**校验失败返回（所有设备均不执行）：**
+
+```json
+{
+  "success": false,
+  "error": "未知命令: device_type=cisco, command_id=xxx",
+  "results": []
+}
+```
+
+---
+
+### 4. execute_multi_commands
+
+对一台或多台设备执行多条只读命令，每台设备一次 SSH 连接完成所有命令。
+
+- 适用于巡检等需要同时获取多项信息的场景，减少重复建连开销
+- 每条命令独立校验，某条校验失败不影响其他命令执行
+- 多台设备时各自建立一次连接，设备间并发执行
+- `host` 和 `hosts` 二选一
+
+**参数：**
+
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+|------|------|------|--------|------|
+| `commands` | object[] | **是** | - | 命令列表，每项含 `command_id` 和可选 `params` |
+| `device_type` | string | 否 | `"cisco"` | 设备类型 |
+| `host` | string | 二选一 | `null` | 单台设备 IP |
+| `hosts` | string[] | 二选一 | `null` | 多台设备 IP 列表 |
+| `port` | integer | 否 | `22` | SSH 端口 |
+| `username` | string | 否 | `null` | SSH 用户名（覆盖服务端默认凭据） |
+| `password` | string | 否 | `null` | SSH 密码（覆盖服务端默认凭据） |
+
+**commands 数组中每项的结构：**
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `command_id` | string | **是** | 命令标识 |
+| `params` | object | 否 | 命令参数 |
+
+**请求示例（单台设备巡检）：**
 
 ```json
 {
@@ -126,15 +358,153 @@ AI 会自动：
   "commands": [
     {"command_id": "display_version"},
     {"command_id": "display_cpu_usage"},
+    {"command_id": "display_memory_usage"},
     {"command_id": "display_ip_interface_brief"},
     {"command_id": "display_arp"}
   ]
 }
 ```
 
-- 每条命令独立校验，某条失败不影响其他命令
-- 支持 `host`（单台）或 `hosts`（多台）二选一，多台设备间并发
-- 每条命令的结果独立返回，包含 `command_id` 对应关系
+**请求示例（多台设备巡检）：**
+
+```json
+{
+  "hosts": ["192.168.1.1", "192.168.1.2"],
+  "device_type": "huawei",
+  "commands": [
+    {"command_id": "display_version"},
+    {"command_id": "display_cpu_usage"}
+  ]
+}
+```
+
+**请求示例（带参数命令）：**
+
+```json
+{
+  "host": "10.0.0.1",
+  "device_type": "cisco",
+  "commands": [
+    {"command_id": "show_version"},
+    {"command_id": "ping", "params": {"ip_address": "10.0.0.2"}},
+    {"command_id": "show_interface", "params": {"interface": "GigabitEthernet0/1"}}
+  ]
+}
+```
+
+**单台设备返回：**
+
+```json
+{
+  "host": "192.168.1.1",
+  "results": [
+    {
+      "command_id": "display_version",
+      "command_executed": "display version",
+      "success": true,
+      "output": "Huawei Versatile Routing Platform Software ...",
+      "error": ""
+    },
+    {
+      "command_id": "display_cpu_usage",
+      "command_executed": "display cpu-usage",
+      "success": true,
+      "output": "CPU utilization for five seconds: 12% ...",
+      "error": ""
+    },
+    {
+      "command_id": "display_memory_usage",
+      "command_executed": "display memory-usage",
+      "success": true,
+      "output": "System Total Memory Is: 512M bytes ...",
+      "error": ""
+    }
+  ]
+}
+```
+
+**多台设备返回：**
+
+```json
+[
+  {
+    "host": "192.168.1.1",
+    "results": [
+      {"command_id": "display_version", "command_executed": "display version", "success": true, "output": "...", "error": ""},
+      {"command_id": "display_cpu_usage", "command_executed": "display cpu-usage", "success": true, "output": "...", "error": ""}
+    ]
+  },
+  {
+    "host": "192.168.1.2",
+    "results": [
+      {"command_id": "display_version", "command_executed": "display version", "success": true, "output": "...", "error": ""},
+      {"command_id": "display_cpu_usage", "command_executed": "display cpu-usage", "success": false, "output": "", "error": "SSH 执行异常: ..."}
+    ]
+  }
+]
+```
+
+**部分命令校验失败的返回（其他命令正常执行）：**
+
+```json
+{
+  "host": "192.168.1.1",
+  "results": [
+    {
+      "command_id": "invalid_command",
+      "command_executed": "",
+      "success": false,
+      "output": "",
+      "error": "未知命令: device_type=huawei, command_id=invalid_command"
+    },
+    {
+      "command_id": "display_version",
+      "command_executed": "display version",
+      "success": true,
+      "output": "Huawei Versatile Routing Platform Software ...",
+      "error": ""
+    }
+  ]
+}
+```
+
+---
+
+### 错误码说明
+
+所有工具的错误信息通过返回结构中的 `error` 字段传递，常见错误：
+
+| 错误信息 | 原因 | 处理建议 |
+|---------|------|---------|
+| `未知命令: device_type=xxx, command_id=xxx` | command_id 不在命令菜单中 | 先调用 `list_available_commands` 获取正确的 command_id |
+| `不支持的设备类型: xxx` | device_type 不在支持列表中 | 检查设备类型映射表 |
+| `缺少必填参数: xxx` | 命令需要参数但未提供 | 查看命令菜单中的 params 定义 |
+| `参数包含非法字符: xxx` | 参数值包含 `; \| & $ \n` 等注入字符 | 移除参数中的特殊字符 |
+| `参数 xxx 不是合法的 IPv4 地址` | ip_address 类型参数格式错误 | 传入合法的 IPv4 地址 |
+| `认证失败: host:port` | SSH 用户名或密码错误 | 检查凭据配置 |
+| `连接超时: host:port（超时 30s）` | 设备不可达或网络延迟过高 | 检查网络连通性 |
+| `设备不可达: host:port` | 无法建立 TCP 连接 | 检查 IP、端口、防火墙规则 |
+| `未配置 SSH 凭据` | 服务端 .env 未配置且客户端未传入凭据 | 配置 .env 或传入 username/password |
+| `必须提供 host 或 hosts 参数` | execute_multi_commands 未提供目标设备 | 二选一提供 host 或 hosts |
+
+---
+
+### 设备类型映射
+
+调用时 `device_type` 使用左列值：
+
+| device_type | 厂商/平台 | netmiko 映射 |
+|-------------|----------|-------------|
+| `cisco` | Cisco IOS/IOS-XE | cisco_ios |
+| `cisco_asa` | Cisco ASA | cisco_asa |
+| `cisco_nxos` | Cisco NX-OS | cisco_nxos |
+| `huawei` | Huawei VRP | huawei_vrp |
+| `h3c` | H3C Comware | hp_comware |
+| `fortinet` | Fortinet FortiGate | fortinet |
+| `aruba` | Aruba OS | aruba_os |
+| `juniper` | Juniper JunOS | juniper_junos |
+| `ruijie` | Ruijie OS | ruijie_os |
+| `ruckus` | Ruckus FastIron | ruckus_fastiron |
 
 ---
 
@@ -142,7 +512,9 @@ AI 会自动：
 
 ```
 network-device-mcp/
-├── start.sh                        # 一键启动脚本
+├── start.sh                        # 后台启动脚本
+├── start-debug.sh                  # 前台 Debug 模式启动
+├── stop.sh                         # 停止后台服务
 ├── config/
 │   └── commands.yaml               # 命令封闭集合（10 平台 318 条命令）
 ├── src/
@@ -154,7 +526,7 @@ network-device-mcp/
 │   ├── commands/                   # 命令解析层
 │   │   └── registry.py             #   YAML 加载 + 参数校验 + 命令拼装
 │   ├── security/                   # 安全校验层
-│   │   ├── validator.py            #   注入字符检测 + 兜底危险关键词黑名单
+│   │   ├── validator.py            #   注入字符检测
 │   │   └── credential.py           #   凭据管理（.env 默认 + 客户端覆盖）
 │   ├── executor/                   # SSH 执行层
 │   │   └── ssh.py                  #   netmiko 异步执行 + 并发控制
@@ -200,20 +572,21 @@ cisco:
     command: "show mac address-table"
 ```
 
-### 设备类型映射
+带参数的命令使用 `{参数名}` 占位符：
 
-| 本系统 | netmiko device_type |
-|--------|---------------------|
-| cisco | cisco_ios |
-| cisco_asa | cisco_asa |
-| cisco_nxos | cisco_nxos |
-| huawei | huawei_vrp |
-| h3c | hp_comware |
-| fortinet | fortinet |
-| aruba | aruba_os |
-| juniper | juniper_junos |
-| ruijie | ruijie_os |
-| ruckus | ruckus_fastiron |
+```yaml
+cisco:
+  - id: ping
+    name: "Ping 测试"
+    description: "从设备 Ping 指定 IP"
+    command: "ping {ip_address}"
+    params:
+      - name: ip_address
+        type: ip_address
+        description: "目标 IP 地址"
+```
+
+修改 YAML 后需要**重启服务**才能生效（命令在启动时一次性加载到内存）。
 
 ---
 
