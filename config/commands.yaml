@@ -1188,6 +1188,81 @@ h3c:
     description: "显示所有 WLAN 服务模板"
     command: "display wlan service-template all"
 
+  - id: display_wlan_ap_detail
+    name: "查看指定 AP 详情"
+    description: "显示指定 AP 的详细状态（上线时长、IP、型号）"
+    command: "display wlan ap name {ap_name}"
+    params:
+      - name: ap_name
+        type: string
+        description: "AP 名称"
+        pattern: "^[A-Za-z0-9][A-Za-z0-9_\\-\\.]+$"
+
+  - id: display_wlan_ap_radio
+    name: "查看指定 AP 射频详情"
+    description: "显示指定 AP 的射频信息（信道、功率、利用率）"
+    command: "display wlan ap radio {ap_name}"
+    params:
+      - name: ap_name
+        type: string
+        description: "AP 名称"
+        pattern: "^[A-Za-z0-9][A-Za-z0-9_\\-\\.]+$"
+
+  - id: display_wlan_client_ap
+    name: "查看指定 AP 的客户端"
+    description: "显示指定 AP 下的无线客户端列表（信号、SNR）"
+    command: "display wlan client ap {ap_name}"
+    params:
+      - name: ap_name
+        type: string
+        description: "AP 名称"
+        pattern: "^[A-Za-z0-9][A-Za-z0-9_\\-\\.]+$"
+
+  - id: display_wlan_radio_channel
+    name: "查看射频信道分配"
+    description: "显示全局射频信道分配情况"
+    command: "display wlan radio-channel"
+
+  - id: display_wlan_ap_interference
+    name: "查看指定 AP 干扰信息"
+    description: "显示指定 AP 的干扰信息"
+    command: "display wlan ap interference {ap_name}"
+    params:
+      - name: ap_name
+        type: string
+        description: "AP 名称"
+        pattern: "^[A-Za-z0-9][A-Za-z0-9_\\-\\.]+$"
+
+  - id: display_ip_routing_table_all_vpn
+    name: "查看全 VPN 路由表"
+    description: "显示全 VPN 实例路由表"
+    command: "display ip routing-table all-vpn-instance"
+
+  - id: display_ip_routing_table_vpn_instance
+    name: "查看指定 VPN 路由表"
+    description: "显示指定 VPN 实例的路由表"
+    command: "display ip routing-table vpn-instance {vpn_instance}"
+    params:
+      - name: vpn_instance
+        type: string
+        description: "VPN 实例名称"
+        pattern: "^[A-Za-z0-9][A-Za-z0-9_\\-\\.]+$"
+
+  - id: display_ip_vpn_instance
+    name: "查看所有 VPN 实例"
+    description: "显示所有 VPN 实例列表"
+    command: "display ip vpn-instance"
+
+  - id: display_bgp_peer_vpn_all
+    name: "查看全 VPN BGP 邻居"
+    description: "显示全 VPN 实例 BGP 邻居"
+    command: "display bgp peer ipv4 vpn-instance-all"
+
+  - id: display_link_aggregation_verbose
+    name: "查看聚合组详情"
+    description: "显示链路聚合组概览"
+    command: "display link-aggregation verbose"
+
 # ── Fortinet FortiGate ───────────────────────────────────────
 fortinet:
   - id: get_system_status
@@ -1402,6 +1477,36 @@ aruba:
       - name: ip_address
         type: ip_address
         description: "目标 IP 地址"
+
+  - id: show_ap_radio_detail
+    name: "查看指定 AP 射频详情"
+    description: "显示指定 AP 的射频详细信息"
+    command: "show ap monitor ap-list ap-name {ap_name}"
+    params:
+      - name: ap_name
+        type: string
+        description: "AP 名称"
+        pattern: "^[A-Za-z0-9][A-Za-z0-9_\\-\\.]+$"
+
+  - id: show_ap_arm_state
+    name: "查看 AP ARM 状态"
+    description: "显示指定 AP 的 ARM 状态（信道利用率、噪声）"
+    command: "show ap arm state ap-name {ap_name}"
+    params:
+      - name: ap_name
+        type: string
+        description: "AP 名称"
+        pattern: "^[A-Za-z0-9][A-Za-z0-9_\\-\\.]+$"
+
+  - id: show_ap_client_detail
+    name: "查看指定 AP 客户端关联"
+    description: "显示指定 AP 的客户端关联详情"
+    command: "show ap association ap-name {ap_name}"
+    params:
+      - name: ap_name
+        type: string
+        description: "AP 名称"
+        pattern: "^[A-Za-z0-9][A-Za-z0-9_\\-\\.]+$"
 
 # ── Juniper JunOS ────────────────────────────────────────────
 juniper:
@@ -1696,6 +1801,7 @@ ruijie:
     name: "查看日志"
     description: "显示系统日志"
     command: "show logging"
+
 
 # ── Ruckus FastIron / ICX ────────────────────────────────────
 ruckus:
