@@ -15,7 +15,7 @@
 | "从这台设备 ping 一下 10.0.0.1" | 调用 `ping` 命令并解读结果 |
 | "帮我对比两台设备的路由表" | 分别查询后对比差异 |
 
-**支持 10 个平台，318 条只读命令：**
+**支持 10 个平台，332 条只读命令：**
 
 | 平台 | 命令数 | 说明 |
 |------|--------|------|
@@ -23,9 +23,9 @@
 | Cisco ASA | 28 | 防火墙（xlate、conn、failover、VPN） |
 | Cisco NX-OS | 31 | 数据中心交换机（vPC、port-channel） |
 | Huawei VRP | 44 | 交换机、路由器、无线 AC |
-| H3C Comware | 33 | 交换机、无线 AC |
+| H3C Comware | 43 | 交换机、无线 AC、VPN 路由 |
 | Fortinet FortiGate | 20 | 防火墙（策略、VPN、HA） |
-| Aruba | 19 | 无线控制器（AP、射频、客户端） |
+| Aruba | 23 | 无线控制器（AP、射频、客户端） |
 | Juniper JunOS | 30 | 路由器、SRX 防火墙（安全域、集群） |
 | Ruijie | 22 | 交换机、路由器 |
 | Ruckus FastIron | 21 | ICX 交换机 |
@@ -34,8 +34,8 @@
 
 ```
 用户 ──自然语言──> AI 助手（Claude）──MCP/SSE──> 本服务 ──SSH──> 网络设备
-                  AI 选择命令并填参数            校验+拼装+执行     返回原始输出
-                  AI 分析结果回答用户  <────────  返回结果  <──────
+                  AI 选择命令并填参数            校验+拼装           返回原始输出
+                  AI 分析结果回答用户  <────────  健康检测+执行  <──────
 ```
 
 **关键设计：AI 不能自由输入命令。** AI 只能从预定义的 318 条命令菜单中选择 `command_id`，服务端负责拼装和执行。这从根本上杜绝了 AI 构造危险命令的可能。
@@ -48,8 +48,22 @@
 2. **参数类型校验** — ip_address（IPv4 校验）/ string（正则匹配）/ integer（范围约束）
 3. **注入字符拦截** — 参数值禁止 `; | & $ \n` 等 Shell 特殊字符
 4. **服务端拼装** — 命令主体锁死在配置文件中，AI 只能补充参数值
+5. **设备健康检测** — SSH 连接后、命令执行前，检测设备 CPU 和在线用户数，超阈值则拒绝执行
 
 被拦截的操作会记录到审计日志（`logs/audit.log`），每行一条 JSON。
+
+### 健康检测
+
+连接设备后，系统会自动检测设备负载状态，避免对已过载设备造成额外压力：
+
+| 指标 | 默认阈值 | 超阈值行为 |
+|------|---------|-----------|
+| CPU 使用率 | 80% | 断连，返回告警，命令不执行 |
+| 在线 VTY 用户数 | 4 | 断连，返回告警，命令不执行 |
+
+- 阈值可在 `config/settings.yaml` 中调整
+- 检测失败（如输出格式无法解析）时跳过检测，不阻断业务
+- 可通过 `health_check.enabled: false` 全局关闭
 
 ---
 
@@ -516,12 +530,14 @@ network-device-mcp/
 ├── start-debug.sh                  # 前台 Debug 模式启动
 ├── stop.sh                         # 停止后台服务
 ├── config/
-│   └── commands.yaml               # 命令封闭集合（10 平台 318 条命令）
+│   ├── commands.yaml               # 命令封闭集合（10 平台 332 条命令）
+│   └── settings.yaml               # 运行时配置（健康检测阈值等）
 ├── src/
 │   ├── server.py                   # MCP 服务入口（FastMCP + SSE 传输）
 │   ├── requirements.txt            # Python 依赖
+│   ├── health_check.py             # 设备健康检测（CPU / 在线用户数）
 │   ├── core/                       # 基础设施层
-│   │   ├── config.py               #   全局配置常量
+│   │   ├── config.py               #   全局配置常量 + settings.yaml 加载
 │   │   └── audit.py                #   JSON 行审计日志
 │   ├── commands/                   # 命令解析层
 │   │   └── registry.py             #   YAML 加载 + 参数校验 + 命令拼装
@@ -529,9 +545,9 @@ network-device-mcp/
 │   │   ├── validator.py            #   注入字符检测
 │   │   └── credential.py           #   凭据管理（.env 默认 + 客户端覆盖）
 │   ├── executor/                   # SSH 执行层
-│   │   └── ssh.py                  #   netmiko 异步执行 + 并发控制
+│   │   └── ssh.py                  #   netmiko 异步执行 + 并发控制 + ssh_session 上下文
 │   └── tools/                      # MCP 工具层（对外接口）
-│       └── handlers.py             #   4 个 MCP 工具定义（编排层）
+│       └── handlers.py             #   4 个 MCP 工具定义（编排层 + 健康检测集成）
 ├── logs/
 │   └── audit.log                   # 审计日志输出
 ├── .env                            # SSH 默认凭据（不入版本控制）
