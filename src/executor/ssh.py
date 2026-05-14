@@ -25,7 +25,7 @@ _semaphore = asyncio.Semaphore(MAX_CONCURRENCY)
 
 # 需要使用 send_command_timing 的 netmiko device_type 集合
 # 这些设备的 prompt 匹配容易误判（输出中含主机名导致提前截断）
-_TIMING_DEVICE_TYPES: set[str] = {"hp_comware", "huawei_vrp"}
+_TIMING_DEVICE_TYPES: set[str] = {"hp_comware", "huawei_vrp", "aruba_os"}
 
 
 class SSHExecutionError(Exception):

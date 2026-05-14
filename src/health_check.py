@@ -222,15 +222,17 @@ def _parse_users(device_type: str, output: str) -> int | None:
                 return 1
 
             case "huawei" | "h3c":
-                # display users: 每个活跃用户一行
-                # 典型格式包含 VTY 会话行
+                # display users 输出格式：
+                #   Idx  Line     Idle       Time              Pid     Type
+                #   10   VTY 0    00:01:30   May 14 17:40:52   2715182 SSH
+                # + 11   VTY 1    00:00:08   May 14 17:42:13   2715226 SSH
+                # Following are more details.
+                # ...
+                # 只匹配会话行：可选 +/F 前缀 + 数字索引 + VTY/AUX/CON
                 lines = output.strip().splitlines()
                 user_lines = [
                     l for l in lines
-                    if l.strip()
-                    and not re.match(r"^\s*$", l)
-                    and not re.match(r"^\s*[-=]+\s*$", l)
-                    and not re.match(r"^\s*(User|Index|The)\s", l, re.IGNORECASE)
+                    if re.match(r"^\s*[+F]?\s*\d+\s+(VTY|AUX|CON|TTY)\s", l)
                 ]
                 return len(user_lines) if user_lines else 0
 
