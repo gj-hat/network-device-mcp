@@ -1,0 +1,11 @@
+# ============================================================
+# 全局配置文件
+# 健康检测阈值、超时、并发等运行时参数
+# ============================================================
+
+health_check:
+  enabled: true
+  cpu_threshold: 80          # CPU 使用率百分比，超过则拒绝执行
+  user_threshold: 4          # 在线 VTY 用户数，超过则拒绝执行
+  cpu_command_id: "_health_cpu"
+  users_command_id: "_health_users"

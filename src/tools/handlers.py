@@ -18,7 +18,13 @@ from mcp.server.fastmcp import FastMCP
 from src.commands import registry as command_registry
 from src.core import audit
 from src.executor import ssh as ssh_executor
-from src.executor.ssh import SSHExecutionError
+from src.executor.ssh import SSHExecutionError, ssh_session
+from src.health_check import (
+    HealthCheckResult,
+    evaluate as health_evaluate,
+    get_check_commands,
+    is_enabled as health_check_enabled,
+)
 from src.security.credential import CredentialError, get_credential
 from src.security.validator import SecurityError
 
@@ -321,6 +327,63 @@ def _validate_commands(
     return validated, rejected
 
 
+async def _run_health_check(
+    conn,
+    device_type: str,
+    netmiko_device_type: str,
+    tool_name: str,
+    host: str,
+    port: int,
+    credential_source: str,
+) -> HealthCheckResult:
+    """执行健康检测并记录审计日志。
+
+    Returns:
+        HealthCheckResult
+    """
+    check_commands = get_check_commands(device_type)
+    if not check_commands:
+        return HealthCheckResult(passed=True, warning="无可用健康检测命令，已跳过")
+
+    results = []
+    for cmd_id, final_cmd in check_commands:
+        try:
+            output = await asyncio.to_thread(
+                ssh_executor.execute_on_connection, conn, final_cmd, netmiko_device_type
+            )
+            # 记录健康检测审计日志
+            audit.log(
+                tool=tool_name,
+                host=host,
+                port=port,
+                device_type=device_type,
+                credential_source=credential_source,
+                command_id=cmd_id,
+                command_executed=final_cmd,
+                success=True,
+            )
+            results.append((cmd_id, output))
+        except Exception as e:
+            # 检测命令执行失败，记录日志但不阻断
+            audit.log(
+                tool=tool_name,
+                host=host,
+                port=port,
+                device_type=device_type,
+                credential_source=credential_source,
+                command_id=cmd_id,
+                command_executed=final_cmd,
+                error=str(e),
+            )
+            # 执行失败跳过该项检测
+            pass
+
+    if not results:
+        return HealthCheckResult(passed=True, warning="健康检测命令均执行失败，已跳过")
+
+    return health_evaluate(device_type, results)
+
+
 async def _execute_multi_on_device(
     *,
     tool_name: str,
@@ -333,46 +396,79 @@ async def _execute_multi_on_device(
     validated_cmds: list[dict],
     rejected_results: list[dict],
 ) -> dict[str, Any]:
-    """在单台设备上执行多条已校验命令（一次 SSH 连接），并记录审计日志。"""
+    """在单台设备上执行多条已校验命令（一次 SSH 连接），含健康检测。"""
     results = list(rejected_results)  # 先加入校验失败的命令结果
 
     if not validated_cmds:
         return {"host": host, "results": results}
 
-    # 提取命令字符串列表
-    cmd_strings = [c["final_command"] for c in validated_cmds]
-
     try:
-        ssh_results = await ssh_executor.execute_multi(
-            host=host,
-            port=port,
-            device_type=device_type,
-            username=username,
-            password=password,
-            commands=cmd_strings,
-        )
+        async with ssh_session(
+            host=host, port=port, device_type=device_type,
+            username=username, password=password,
+        ) as (conn, netmiko_type):
+            # ── 健康检测 ──
+            health_warning = ""
+            if health_check_enabled():
+                health_result = await _run_health_check(
+                    conn, device_type, netmiko_type,
+                    tool_name, host, port, credential_source,
+                )
+                if not health_result.passed:
+                    # 设备过载，所有命令不执行
+                    for cmd_info in validated_cmds:
+                        audit.log(
+                            tool=tool_name,
+                            host=host,
+                            port=port,
+                            device_type=device_type,
+                            credential_source=credential_source,
+                            command_id=cmd_info["command_id"],
+                            params=cmd_info["params"],
+                            command_executed=cmd_info["final_command"],
+                            blocked=True,
+                            block_reason=health_result.warning,
+                        )
+                        results.append({
+                            "command_id": cmd_info["command_id"],
+                            "command_executed": cmd_info["final_command"],
+                            "success": False,
+                            "output": "",
+                            "error": health_result.warning,
+                        })
+                    result = {"host": host, "results": results}
+                    if health_result.details:
+                        result["health_check"] = health_result.details
+                    return result
+                health_warning = health_result.warning
 
-        # 将 SSH 结果与 command_id 对应，逐条记录审计日志
-        for cmd_info, ssh_res in zip(validated_cmds, ssh_results):
-            audit.log(
-                tool=tool_name,
-                host=host,
-                port=port,
-                device_type=device_type,
-                credential_source=credential_source,
-                command_id=cmd_info["command_id"],
-                params=cmd_info["params"],
-                command_executed=cmd_info["final_command"],
-                success=ssh_res["success"],
-                error=ssh_res.get("error", ""),
+            # ── 执行业务命令 ──
+            cmd_strings = [c["final_command"] for c in validated_cmds]
+            ssh_results = await asyncio.to_thread(
+                ssh_executor.execute_multi_on_connection,
+                conn, cmd_strings, netmiko_type,
             )
-            results.append({
-                "command_id": cmd_info["command_id"],
-                "command_executed": cmd_info["final_command"],
-                "success": ssh_res["success"],
-                "output": ssh_res.get("output", ""),
-                "error": ssh_res.get("error", ""),
-            })
+
+            for cmd_info, ssh_res in zip(validated_cmds, ssh_results):
+                audit.log(
+                    tool=tool_name,
+                    host=host,
+                    port=port,
+                    device_type=device_type,
+                    credential_source=credential_source,
+                    command_id=cmd_info["command_id"],
+                    params=cmd_info["params"],
+                    command_executed=cmd_info["final_command"],
+                    success=ssh_res["success"],
+                    error=ssh_res.get("error", ""),
+                )
+                results.append({
+                    "command_id": cmd_info["command_id"],
+                    "command_executed": cmd_info["final_command"],
+                    "success": ssh_res["success"],
+                    "output": ssh_res.get("output", ""),
+                    "error": ssh_res.get("error", ""),
+                })
 
     except SSHExecutionError as e:
         # 连接建立阶段失败，所有命令都标记失败
@@ -396,8 +492,12 @@ async def _execute_multi_on_device(
                 "output": "",
                 "error": error_msg,
             })
+        return {"host": host, "results": results}
 
-    return {"host": host, "results": results}
+    result = {"host": host, "results": results}
+    if health_warning:
+        result["health_check_warning"] = health_warning
+    return result
 
 
 async def _execute_single(
@@ -463,7 +563,7 @@ async def _execute_single(
             "error": str(e),
         }
 
-    # ③ SSH 执行
+    # ③ SSH 执行（含健康检测）
     return await _execute_on_device(
         tool_name=tool_name,
         host=host,
@@ -491,34 +591,70 @@ async def _execute_on_device(
     password: str,
     credential_source: str,
 ) -> dict[str, Any]:
-    """在单台设备上执行已校验的单条命令并记录日志。"""
+    """在单台设备上执行已校验的单条命令，含健康检测。"""
     try:
-        output = await ssh_executor.execute(
-            host=host,
-            port=port,
-            device_type=device_type,
-            username=username,
-            password=password,
-            command=final_command,
-        )
-        audit.log(
-            tool=tool_name,
-            host=host,
-            port=port,
-            device_type=device_type,
-            credential_source=credential_source,
-            command_id=command_id,
-            params=params,
-            command_executed=final_command,
-            success=True,
-        )
-        return {
-            "host": host,
-            "success": True,
-            "command_executed": final_command,
-            "output": output,
-            "error": "",
-        }
+        async with ssh_session(
+            host=host, port=port, device_type=device_type,
+            username=username, password=password,
+        ) as (conn, netmiko_type):
+            # ── 健康检测 ──
+            health_warning = ""
+            if health_check_enabled():
+                health_result = await _run_health_check(
+                    conn, device_type, netmiko_type,
+                    tool_name, host, port, credential_source,
+                )
+                if not health_result.passed:
+                    audit.log(
+                        tool=tool_name,
+                        host=host,
+                        port=port,
+                        device_type=device_type,
+                        credential_source=credential_source,
+                        command_id=command_id,
+                        params=params,
+                        command_executed=final_command,
+                        blocked=True,
+                        block_reason=health_result.warning,
+                    )
+                    result = {
+                        "host": host,
+                        "success": False,
+                        "command_executed": final_command,
+                        "output": "",
+                        "error": health_result.warning,
+                    }
+                    if health_result.details:
+                        result["health_check"] = health_result.details
+                    return result
+                health_warning = health_result.warning
+
+            # ── 执行业务命令 ──
+            output = await asyncio.to_thread(
+                ssh_executor.execute_on_connection, conn, final_command, netmiko_type
+            )
+            audit.log(
+                tool=tool_name,
+                host=host,
+                port=port,
+                device_type=device_type,
+                credential_source=credential_source,
+                command_id=command_id,
+                params=params,
+                command_executed=final_command,
+                success=True,
+            )
+            result = {
+                "host": host,
+                "success": True,
+                "command_executed": final_command,
+                "output": output,
+                "error": "",
+            }
+            if health_warning:
+                result["health_check_warning"] = health_warning
+            return result
+
     except SSHExecutionError as e:
         audit.log(
             tool=tool_name,

@@ -7,12 +7,17 @@
 import os
 from pathlib import Path
 
+import yaml
+
 # ── 项目路径 ──────────────────────────────────────────────
 # 项目根目录（src/core/ 的上两级）
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
 # 命令配置文件路径
 COMMANDS_YAML_PATH = PROJECT_ROOT / "config" / "commands.yaml"
+
+# 全局设置文件路径
+SETTINGS_YAML_PATH = PROJECT_ROOT / "config" / "settings.yaml"
 
 # 审计日志路径
 AUDIT_LOG_PATH = PROJECT_ROOT / "logs" / "audit.log"
@@ -50,4 +55,22 @@ SUPPORTED_DEVICE_TYPES: set[str] = set(DEVICE_TYPE_MAP.keys())
 # ── 安全相关 ─────────────────────────────────────────────
 # 参数值禁止包含的注入字符
 INJECTION_CHARS: set[str] = {";", "|", "&", "`", "$", "\n", "\r", "\\"}
+
+# ── 健康检测配置（从 settings.yaml 加载）────────────────────
+def _load_settings() -> dict:
+    """加载 config/settings.yaml，文件不存在时返回空字典。"""
+    if SETTINGS_YAML_PATH.exists():
+        with open(SETTINGS_YAML_PATH, "r", encoding="utf-8") as f:
+            return yaml.safe_load(f) or {}
+    return {}
+
+
+_settings = _load_settings()
+_health_cfg = _settings.get("health_check", {})
+
+HEALTH_CHECK_ENABLED: bool = _health_cfg.get("enabled", True)
+HEALTH_CHECK_CPU_THRESHOLD: int = int(_health_cfg.get("cpu_threshold", 80))
+HEALTH_CHECK_USER_THRESHOLD: int = int(_health_cfg.get("user_threshold", 4))
+HEALTH_CHECK_CPU_CMD_ID: str = _health_cfg.get("cpu_command_id", "_health_cpu")
+HEALTH_CHECK_USERS_CMD_ID: str = _health_cfg.get("users_command_id", "_health_users")
 

@@ -2,9 +2,15 @@
 
 使用 netmiko 连接网络设备并执行命令，通过 asyncio.to_thread 实现异步。
 并发上限通过 asyncio.Semaphore 控制。
+
+提供两种使用方式：
+1. 高层接口 execute() / execute_multi() — 封装完整流程（向后兼容）
+2. ssh_session 上下文管理器 — 暴露连接对象，支持健康检测等中间逻辑插入
 """
 
 import asyncio
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
 
 from netmiko import ConnectHandler
 from netmiko.exceptions import (
@@ -24,6 +30,122 @@ _TIMING_DEVICE_TYPES: set[str] = {"hp_comware", "huawei_vrp"}
 
 class SSHExecutionError(Exception):
     """SSH 执行失败时抛出的异常。"""
+
+
+# ── 上下文管理器（暴露连接对象）────────────────────────────────
+
+
+@asynccontextmanager
+async def ssh_session(
+    *,
+    host: str,
+    port: int,
+    device_type: str,
+    username: str,
+    password: str,
+) -> AsyncGenerator[tuple, None]:
+    """SSH 连接上下文管理器。
+
+    在 semaphore 保护下建立连接，退出时自动断连并释放信号量。
+    供 handlers 编排「连接→检测→执行→断连」流程。
+
+    Yields:
+        (conn, netmiko_device_type): netmiko 连接对象和设备类型字符串
+
+    Raises:
+        SSHExecutionError: 连接失败、认证失败、超时等
+    """
+    netmiko_device_type = DEVICE_TYPE_MAP.get(device_type)
+    if not netmiko_device_type:
+        raise SSHExecutionError(f"不支持的设备类型: {device_type}")
+
+    device_params = {
+        "device_type": netmiko_device_type,
+        "host": host,
+        "port": port,
+        "username": username,
+        "password": password,
+        "timeout": SSH_TIMEOUT,
+        "read_timeout_override": SSH_TIMEOUT,
+        "conn_timeout": SSH_TIMEOUT,
+    }
+
+    async with _semaphore:
+        try:
+            conn = await asyncio.to_thread(_connect_blocking, device_params)
+        except NetmikoAuthenticationException:
+            raise SSHExecutionError(f"认证失败: {host}:{port}")
+        except NetmikoTimeoutException:
+            raise SSHExecutionError(f"连接超时: {host}:{port}（超时 {SSH_TIMEOUT}s）")
+        except OSError as e:
+            raise SSHExecutionError(f"设备不可达: {host}:{port} — {e}")
+        except Exception as e:
+            raise SSHExecutionError(f"SSH 执行异常: {host}:{port} — {type(e).__name__}: {e}")
+
+        try:
+            yield conn, netmiko_device_type
+        finally:
+            try:
+                conn.disconnect()
+            except Exception:
+                pass  # 断连失败不影响业务
+
+
+def execute_on_connection(conn, command: str, netmiko_device_type: str) -> str:
+    """在已有连接上执行单条命令。
+
+    注意：此函数是同步的，在 asyncio 环境中需配合 to_thread 使用，
+    或在 ssh_session 的 yield 后直接调用（因为整个上下文已在 to_thread 中）。
+
+    实际上由于 ssh_session yield 后还在主线程，需要用 asyncio.to_thread 包装。
+
+    Args:
+        conn: netmiko 连接对象
+        command: 要执行的命令
+        netmiko_device_type: netmiko 设备类型字符串
+
+    Returns:
+        命令输出文本
+    """
+    return _send_command(conn, command, netmiko_device_type)
+
+
+def execute_multi_on_connection(
+    conn, commands: list[str], netmiko_device_type: str
+) -> list[dict]:
+    """在已有连接上顺序执行多条命令。
+
+    单条命令异常不中断，继续执行后续命令。
+
+    Args:
+        conn: netmiko 连接对象
+        commands: 命令列表
+        netmiko_device_type: netmiko 设备类型字符串
+
+    Returns:
+        每条命令的结果列表
+    """
+    results = []
+    for cmd in commands:
+        try:
+            output = _send_command(conn, cmd, netmiko_device_type)
+            results.append({
+                "command": cmd,
+                "success": True,
+                "output": output,
+                "error": "",
+            })
+        except Exception as e:
+            results.append({
+                "command": cmd,
+                "success": False,
+                "output": "",
+                "error": f"{type(e).__name__}: {e}",
+            })
+    return results
+
+
+# ── 高层接口（向后兼容）────────────────────────────────────────
 
 
 async def execute(
@@ -51,33 +173,11 @@ async def execute(
     Raises:
         SSHExecutionError: 连接失败、认证失败、超时等
     """
-    netmiko_device_type = DEVICE_TYPE_MAP.get(device_type)
-    if not netmiko_device_type:
-        raise SSHExecutionError(f"不支持的设备类型: {device_type}")
-
-    device_params = {
-        "device_type": netmiko_device_type,
-        "host": host,
-        "port": port,
-        "username": username,
-        "password": password,
-        "timeout": SSH_TIMEOUT,
-        "read_timeout_override": SSH_TIMEOUT,
-        "conn_timeout": SSH_TIMEOUT,
-    }
-
-    async with _semaphore:
-        try:
-            output = await asyncio.to_thread(_execute_blocking, device_params, command)
-        except NetmikoAuthenticationException:
-            raise SSHExecutionError(f"认证失败: {host}:{port}")
-        except NetmikoTimeoutException:
-            raise SSHExecutionError(f"连接超时: {host}:{port}（超时 {SSH_TIMEOUT}s）")
-        except OSError as e:
-            raise SSHExecutionError(f"设备不可达: {host}:{port} — {e}")
-        except Exception as e:
-            raise SSHExecutionError(f"SSH 执行异常: {host}:{port} — {type(e).__name__}: {e}")
-
+    async with ssh_session(
+        host=host, port=port, device_type=device_type,
+        username=username, password=password,
+    ) as (conn, netmiko_type):
+        output = await asyncio.to_thread(_send_command, conn, command, netmiko_type)
     return output
 
 
@@ -106,36 +206,17 @@ async def execute_multi(
     Raises:
         SSHExecutionError: 连接建立阶段的异常（认证失败、超时、不可达）
     """
-    netmiko_device_type = DEVICE_TYPE_MAP.get(device_type)
-    if not netmiko_device_type:
-        raise SSHExecutionError(f"不支持的设备类型: {device_type}")
-
-    device_params = {
-        "device_type": netmiko_device_type,
-        "host": host,
-        "port": port,
-        "username": username,
-        "password": password,
-        "timeout": SSH_TIMEOUT,
-        "read_timeout_override": SSH_TIMEOUT,
-        "conn_timeout": SSH_TIMEOUT,
-    }
-
-    async with _semaphore:
-        try:
-            results = await asyncio.to_thread(
-                _execute_multi_blocking, device_params, commands
-            )
-        except NetmikoAuthenticationException:
-            raise SSHExecutionError(f"认证失败: {host}:{port}")
-        except NetmikoTimeoutException:
-            raise SSHExecutionError(f"连接超时: {host}:{port}（超时 {SSH_TIMEOUT}s）")
-        except OSError as e:
-            raise SSHExecutionError(f"设备不可达: {host}:{port} — {e}")
-        except Exception as e:
-            raise SSHExecutionError(f"SSH 执行异常: {host}:{port} — {type(e).__name__}: {e}")
-
+    async with ssh_session(
+        host=host, port=port, device_type=device_type,
+        username=username, password=password,
+    ) as (conn, netmiko_type):
+        results = await asyncio.to_thread(
+            execute_multi_on_connection, conn, commands, netmiko_type
+        )
     return results
+
+
+# ── 内部辅助函数 ─────────────────────────────────────────────
 
 
 def _send_command(conn, command: str, device_type: str) -> str:
@@ -150,35 +231,6 @@ def _send_command(conn, command: str, device_type: str) -> str:
     return conn.send_command(command, read_timeout=SSH_TIMEOUT)
 
 
-def _execute_blocking(device_params: dict, command: str) -> str:
-    """同步执行单条 SSH 命令（在线程中运行）。"""
-    with ConnectHandler(**device_params) as conn:
-        output = _send_command(conn, command, device_params["device_type"])
-    return output
-
-
-def _execute_multi_blocking(device_params: dict, commands: list[str]) -> list[dict]:
-    """同步执行多条 SSH 命令，共用一个连接（在线程中运行）。
-
-    单条命令执行异常不中断连接，继续执行后续命令。
-    """
-    device_type = device_params["device_type"]
-    results = []
-    with ConnectHandler(**device_params) as conn:
-        for cmd in commands:
-            try:
-                output = _send_command(conn, cmd, device_type)
-                results.append({
-                    "command": cmd,
-                    "success": True,
-                    "output": output,
-                    "error": "",
-                })
-            except Exception as e:
-                results.append({
-                    "command": cmd,
-                    "success": False,
-                    "output": "",
-                    "error": f"{type(e).__name__}: {e}",
-                })
-    return results
+def _connect_blocking(device_params: dict):
+    """同步建立 SSH 连接（在线程中运行）。"""
+    return ConnectHandler(**device_params)

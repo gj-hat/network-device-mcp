@@ -423,6 +423,19 @@ cisco:
     description: "显示 CEF 转发表"
     command: "show ip cef"
 
+  # --- 健康检测（内部命令，不暴露给 AI）---
+  - id: _health_cpu
+    name: "CPU 检测"
+    description: "内部使用：检测设备 CPU 使用率"
+    command: "show processes cpu"
+    internal: true
+
+  - id: _health_users
+    name: "在线用户检测"
+    description: "内部使用：检测当前 VTY 在线用户数"
+    command: "show users"
+    internal: true
+
 # ── Cisco ASA ────────────────────────────────────────────────
 cisco_asa:
   - id: show_version
@@ -577,6 +590,19 @@ cisco_asa:
       - name: ip_address
         type: ip_address
         description: "目标 IP 地址"
+
+  # --- 健康检测（内部命令，不暴露给 AI）---
+  - id: _health_cpu
+    name: "CPU 检测"
+    description: "内部使用：检测设备 CPU 使用率"
+    command: "show cpu usage"
+    internal: true
+
+  - id: _health_users
+    name: "在线用户检测"
+    description: "内部使用：检测当前在线用户数"
+    command: "show curpriv"
+    internal: true
 
 # ── Cisco NX-OS ──────────────────────────────────────────────
 cisco_nxos:
@@ -747,6 +773,19 @@ cisco_nxos:
       - name: ip_address
         type: ip_address
         description: "目标 IP 地址"
+
+  # --- 健康检测（内部命令，不暴露给 AI）---
+  - id: _health_cpu
+    name: "CPU 检测"
+    description: "内部使用：检测设备 CPU 使用率"
+    command: "show system resources"
+    internal: true
+
+  - id: _health_users
+    name: "在线用户检测"
+    description: "内部使用：检测当前在线用户数"
+    command: "show users"
+    internal: true
 
 # ── Huawei VRP ───────────────────────────────────────────────
 huawei:
@@ -997,6 +1036,19 @@ huawei:
     name: "查看 WLAN 配置"
     description: "显示所有 WLAN 配置"
     command: "display wlan all"
+
+  # --- 健康检测（内部命令，不暴露给 AI）---
+  - id: _health_cpu
+    name: "CPU 检测"
+    description: "内部使用：检测设备 CPU 使用率"
+    command: "display cpu-usage"
+    internal: true
+
+  - id: _health_users
+    name: "在线用户检测"
+    description: "内部使用：检测当前在线用户数"
+    command: "display users"
+    internal: true
 
 # ── H3C Comware ──────────────────────────────────────────────
 h3c:
@@ -1263,6 +1315,19 @@ h3c:
     description: "显示链路聚合组概览"
     command: "display link-aggregation verbose"
 
+  # --- 健康检测（内部命令，不暴露给 AI）---
+  - id: _health_cpu
+    name: "CPU 检测"
+    description: "内部使用：检测设备 CPU 使用率"
+    command: "display cpu-usage"
+    internal: true
+
+  - id: _health_users
+    name: "在线用户检测"
+    description: "内部使用：检测当前在线用户数"
+    command: "display users"
+    internal: true
+
 # ── Fortinet FortiGate ───────────────────────────────────────
 fortinet:
   - id: get_system_status
@@ -1372,6 +1437,19 @@ fortinet:
     name: "查看日志测试"
     description: "显示日志连通性测试"
     command: "diagnose log test"
+
+  # --- 健康检测（内部命令，不暴露给 AI）---
+  - id: _health_cpu
+    name: "CPU 检测"
+    description: "内部使用：检测设备 CPU 使用率"
+    command: "get system performance status"
+    internal: true
+
+  - id: _health_users
+    name: "在线用户检测"
+    description: "内部使用：检测当前在线管理员数"
+    command: "get system info admin"
+    internal: true
 
 # ── Aruba 无线控制器 ─────────────────────────────────────────
 aruba:
@@ -1507,6 +1585,19 @@ aruba:
         type: string
         description: "AP 名称"
         pattern: "^[A-Za-z0-9][A-Za-z0-9_\\-\\.]+$"
+
+  # --- 健康检测（内部命令，不暴露给 AI）---
+  - id: _health_cpu
+    name: "CPU 检测"
+    description: "内部使用：检测控制器 CPU 使用率"
+    command: "show switches cpu-utilization"
+    internal: true
+
+  - id: _health_users
+    name: "在线用户检测"
+    description: "内部使用：检测当前管理用户数"
+    command: "show loginsessions"
+    internal: true
 
 # ── Juniper JunOS ────────────────────────────────────────────
 juniper:
@@ -1677,6 +1768,19 @@ juniper:
     description: "显示运行配置"
     command: "show configuration"
 
+  # --- 健康检测（内部命令，不暴露给 AI）---
+  - id: _health_cpu
+    name: "CPU 检测"
+    description: "内部使用：检测设备 CPU 使用率"
+    command: "show chassis routing-engine"
+    internal: true
+
+  - id: _health_users
+    name: "在线用户检测"
+    description: "内部使用：检测当前在线用户数"
+    command: "show system users"
+    internal: true
+
 # ── 锐捷 Ruijie OS ──────────────────────────────────────────
 ruijie:
   - id: show_version
@@ -1803,6 +1907,19 @@ ruijie:
     command: "show logging"
 
 
+  # --- 健康检测（内部命令，不暴露给 AI）---
+  - id: _health_cpu
+    name: "CPU 检测"
+    description: "内部使用：检测设备 CPU 使用率"
+    command: "show cpu"
+    internal: true
+
+  - id: _health_users
+    name: "在线用户检测"
+    description: "内部使用：检测当前在线用户数"
+    command: "show users"
+    internal: true
+
 # ── Ruckus FastIron / ICX ────────────────────────────────────
 ruckus:
   - id: show_version
@@ -1922,3 +2039,16 @@ ruckus:
     name: "查看日志"
     description: "显示系统日志"
     command: "show logging"
+
+  # --- 健康检测（内部命令，不暴露给 AI）---
+  - id: _health_cpu
+    name: "CPU 检测"
+    description: "内部使用：检测设备 CPU 使用率"
+    command: "show cpu-usage"
+    internal: true
+
+  - id: _health_users
+    name: "在线用户检测"
+    description: "内部使用：检测当前在线用户数"
+    command: "show users"
+    internal: true

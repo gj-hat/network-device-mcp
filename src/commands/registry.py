@@ -56,6 +56,9 @@ def get_commands(device_type: str = "cisco") -> list[dict[str, Any]]:
     commands = _registry.get(device_type, [])
     result = []
     for cmd in commands:
+        # 跳过内部命令（健康检测等），不暴露给 AI
+        if cmd.get("internal"):
+            continue
         result.append({
             "command_id": cmd["id"],
             "name": cmd["name"],
