@@ -1182,6 +1182,11 @@ h3c:
     description: "显示 LLDP 邻居详情"
     command: "display lldp neighbor-information"
 
+  - id: display_lldp_neighbor_information_list
+    name: "查看 LLDP 邻居简要信息"
+    description: "显示 LLDP 邻居简要信息，返回值有接口-邻居接口-邻居系统名称-邻居系统描述"
+    command: "display lldp neighbor-information list"
+
   - id: display_acl_all
     name: "查看 ACL"
     description: "显示所有 ACL"
