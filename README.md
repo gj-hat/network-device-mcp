@@ -88,6 +88,9 @@ cp .env.example .env
 # 或前台 Debug 模式启动（日志直接输出到终端，Ctrl+C 停止）
 ./start-debug.sh
 
+# 重启服务（修改配置或命令后使用）
+./restart.sh
+
 # 停止后台服务
 ./stop.sh
 ```
@@ -528,6 +531,7 @@ AI 会自动：
 network-device-mcp/
 ├── start.sh                        # 后台启动脚本
 ├── start-debug.sh                  # 前台 Debug 模式启动
+├── restart.sh                      # 重启服务
 ├── stop.sh                         # 停止后台服务
 ├── config/
 │   ├── commands.yaml               # 命令封闭集合（10 平台 332 条命令）
