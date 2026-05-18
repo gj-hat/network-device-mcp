@@ -1174,8 +1174,8 @@ h3c:
 
   - id: display_bgp_peer
     name: "查看 BGP 邻居"
-    description: "显示 BGP 邻居"
-    command: "display bgp peer"
+    description: "显示 BGP ipv4邻居"
+    command: "display bgp peer ipv4"
 
   - id: display_lldp_neighbor_information
     name: "查看 LLDP 邻居"
