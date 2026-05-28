@@ -1192,6 +1192,26 @@ h3c:
     description: "显示所有无线 AP 的连接线路质量，包含 AP 名称、接口、状态和速率"
     command: "display wlan ap all interface"
 
+  - id: display_wlan_ap_all_address
+    name: "查看所有 AP 地址信息"
+    description: "显示所有无线 AP 的 IP/MAC 地址信息"
+    command: "display wlan ap all address"
+
+  - id: display_wlan_ap_all_radio_5g
+    name: "查看所有 AP 5G 射频信息"
+    description: "显示所有无线 AP 的 5GHz 频段射频状态"
+    command: "display wlan ap all radio frequency-band 5"
+
+  - id: display_wlan_bss_all
+    name: "查看所有无线 BSS"
+    description: "显示所有无线 BSS（基本服务集）信息"
+    command: "display wlan bss all"
+
+  - id: display_wlan_statistics_client_ip_conflict
+    name: "查看无线客户端 IP 冲突统计"
+    description: "显示无线客户端 IP 地址冲突统计信息"
+    command: "display wlan statistics client-ip-conflict"
+
   - id: display_acl_all
     name: "查看 ACL"
     description: "显示所有 ACL"
