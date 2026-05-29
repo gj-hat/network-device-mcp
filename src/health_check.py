@@ -88,10 +88,16 @@ def evaluate(
             else:
                 details["online_users"] = users
                 if users > HEALTH_CHECK_USER_THRESHOLD:
+                    # 提取活跃用户详情，便于反向排查
+                    user_details = _parse_user_details(device_type, output)
+                    details["active_users_info"] = user_details
+                    user_info_str = ""
+                    if user_details:
+                        user_info_str = "，当前登录: " + " | ".join(user_details)
                     return HealthCheckResult(
                         passed=False,
-                        details={"online_users": users},
-                        warning=f"设备在线用户过多: {users}（阈值 {HEALTH_CHECK_USER_THRESHOLD}）",
+                        details={"online_users": users, "active_users_info": user_details},
+                        warning=f"设备在线用户过多: {users}（阈值 {HEALTH_CHECK_USER_THRESHOLD}）{user_info_str}",
                     )
 
     return HealthCheckResult(
@@ -224,15 +230,17 @@ def _parse_users(device_type: str, output: str) -> int | None:
             case "huawei" | "h3c":
                 # display users 输出格式：
                 #   Idx  Line     Idle       Time              Pid     Type
-                #   10   VTY 0    00:01:30   May 14 17:40:52   2715182 SSH
-                # + 11   VTY 1    00:00:08   May 14 17:42:13   2715226 SSH
+                # + 10   VTY 0    00:00:05   May 29 09:46:48   32332   SSH
+                # + 11   VTY 1    00:00:05   May 29 09:46:56   32347   SSH
+                #   12   VTY 2                    （空闲未使用）
                 # Following are more details.
                 # ...
-                # 只匹配会话行：可选 +/F 前缀 + 数字索引 + VTY/AUX/CON
+                # 只匹配活跃会话：有 +/F 标记，或有 Idle 时间字段
                 lines = output.strip().splitlines()
                 user_lines = [
                     l for l in lines
-                    if re.match(r"^\s*[+F]?\s*\d+\s+(VTY|AUX|CON|TTY)\s", l)
+                    if re.match(r"^\s*[+F]\s+\d+\s+(VTY|AUX|CON|TTY)\s", l)
+                    or (re.match(r"^\s*\d+\s+(VTY|AUX|CON|TTY)\s", l) and re.search(r"\d{2}:\d{2}:\d{2}", l))
                 ]
                 return len(user_lines) if user_lines else 0
 
@@ -268,3 +276,82 @@ def _parse_users(device_type: str, output: str) -> int | None:
                 return max(len(lines) - 1, 0)
     except (ValueError, AttributeError):
         return None
+
+
+# ── 用户详情提取 ─────────────────────────────────────────────
+
+
+def _parse_user_details(device_type: str, output: str) -> list[str]:
+    """从命令输出中提取活跃用户的详细信息（用户名、来源IP等）。
+
+    Returns:
+        用户信息字符串列表，如 ["guojiabin1(10.225.240.11)", "chenqing3(10.225.240.12)"]
+        解析失败返回空列表
+    """
+    if not output or not output.strip():
+        return []
+
+    try:
+        match device_type:
+            case "huawei" | "h3c":
+                # 从 "Following are more details." 之后提取用户详情
+                # 格式：
+                # VTY 0   :
+                #         User name: guojiabin1
+                #         User role list: level-15
+                #         Location: 10.225.240.11
+                details = []
+                lines = output.strip().splitlines()
+                current_user = ""
+                current_location = ""
+                for line in lines:
+                    m_user = re.match(r"^\s+User name:\s*(\S+)", line)
+                    if m_user:
+                        current_user = m_user.group(1)
+                    m_loc = re.match(r"^\s+Location:\s*(\S+)", line)
+                    if m_loc:
+                        current_location = m_loc.group(1)
+                        # Location 是最后一个字段，收集完成
+                        if current_user:
+                            details.append(f"{current_user}({current_location})")
+                        else:
+                            details.append(f"unknown({current_location})")
+                        current_user = ""
+                        current_location = ""
+                return details
+
+            case "cisco" | "cisco_nxos" | "ruijie" | "ruckus":
+                # show users 格式：
+                # * 2 vty 0  admin  idle  00:02:15  10.1.1.1
+                details = []
+                lines = output.strip().splitlines()
+                for line in lines:
+                    # 跳过标题行
+                    if re.match(r"^\s*Line\s", line, re.IGNORECASE):
+                        continue
+                    if re.match(r"^[\s\-]+$", line):
+                        continue
+                    # 尝试提取用户名和 Location（IP）
+                    parts = line.split()
+                    if len(parts) >= 5:
+                        # 找到 IP 地址
+                        ip = ""
+                        user = ""
+                        for p in parts:
+                            if re.match(r"\d+\.\d+\.\d+\.\d+", p):
+                                ip = p
+                        # 用户名通常在 vty/con 之后
+                        for i, p in enumerate(parts):
+                            if p.lower() in ("vty", "con", "aux") and i + 2 < len(parts):
+                                candidate = parts[i + 2]
+                                if not re.match(r"\d+:\d+:\d+", candidate) and candidate.lower() != "idle":
+                                    user = candidate
+                                break
+                        if ip or user:
+                            details.append(f"{user or 'unknown'}({ip or '?'})")
+                return details
+
+            case _:
+                return []
+    except Exception:
+        return []
