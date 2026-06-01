@@ -70,6 +70,7 @@ _health_cfg = _settings.get("health_check", {})
 
 HEALTH_CHECK_ENABLED: bool = _health_cfg.get("enabled", True)
 HEALTH_CHECK_CPU_THRESHOLD: int = int(_health_cfg.get("cpu_threshold", 80))
+HEALTH_CHECK_USER_CHECK_ENABLED: bool = _health_cfg.get("user_check_enabled", False)
 HEALTH_CHECK_USER_THRESHOLD: int = int(_health_cfg.get("user_threshold", 4))
 HEALTH_CHECK_CPU_CMD_ID: str = _health_cfg.get("cpu_command_id", "_health_cpu")
 HEALTH_CHECK_USERS_CMD_ID: str = _health_cfg.get("users_command_id", "_health_users")

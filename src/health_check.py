@@ -13,6 +13,7 @@ from src.core.config import (
     HEALTH_CHECK_CPU_CMD_ID,
     HEALTH_CHECK_CPU_THRESHOLD,
     HEALTH_CHECK_ENABLED,
+    HEALTH_CHECK_USER_CHECK_ENABLED,
     HEALTH_CHECK_USER_THRESHOLD,
     HEALTH_CHECK_USERS_CMD_ID,
 )
@@ -41,7 +42,10 @@ def get_check_commands(device_type: str) -> list[tuple[str, str]]:
         如果命令解析失败则返回空列表（不阻断业务）
     """
     commands = []
-    for cmd_id in (HEALTH_CHECK_CPU_CMD_ID, HEALTH_CHECK_USERS_CMD_ID):
+    check_ids = [HEALTH_CHECK_CPU_CMD_ID]
+    if HEALTH_CHECK_USER_CHECK_ENABLED:
+        check_ids.append(HEALTH_CHECK_USERS_CMD_ID)
+    for cmd_id in check_ids:
         try:
             final_cmd = resolve_and_validate(device_type, cmd_id)
             commands.append((cmd_id, final_cmd))

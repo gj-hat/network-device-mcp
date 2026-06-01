@@ -6,6 +6,7 @@
 health_check:
   enabled: true
   cpu_threshold: 80          # CPU 使用率百分比，超过则拒绝执行
-  user_threshold: 4          # 在线 VTY 用户数，超过则拒绝执行
+  user_check_enabled: false  # 是否启用在线用户数检测（各厂商输出格式差异大，默认关闭）
+  user_threshold: 4          # 在线 VTY 用户数，超过则拒绝执行（仅 user_check_enabled=true 时生效）
   cpu_command_id: "_health_cpu"
   users_command_id: "_health_users"
