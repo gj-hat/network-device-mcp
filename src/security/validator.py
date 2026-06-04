@@ -1,4 +1,11 @@
-"""安全校验模块。
+"""
+ @author：     JiaGuo
+ @emil：       1520047927@qq.com
+ @date：       Created in 2025/4/26 09:15
+ @description： 安全校验模块，参数值注入字符检测，拦截Shell特殊字符
+ @modified By：
+ @version:     1.0
+
 
 参数值注入字符检测 — 拦截 Shell 特殊字符。
 命令安全性由封闭命令集（commands.yaml）保证，无需兜底黑名单。

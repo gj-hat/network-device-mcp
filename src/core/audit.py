@@ -1,4 +1,11 @@
-"""审计日志模块。
+"""
+ @author：     JiaGuo
+ @emil：       1520047927@qq.com
+ @date：       Created in 2025/4/25 14:30
+ @description： 审计日志模块，每次操作写入一条JSON行到logs/audit.log
+ @modified By：
+ @version:     1.0
+
 
 每次操作（成功、失败、被拦截）写入一条 JSON 行到 logs/audit.log。
 """

@@ -1,4 +1,11 @@
-"""命令配置加载与解析模块。
+"""
+ @author：     JiaGuo
+ @emil：       1520047927@qq.com
+ @date：       Created in 2025/4/27 10:20
+ @description： 命令配置加载与解析，从commands.yaml加载命令定义并提供参数校验和命令拼装
+ @modified By：
+ @version:     1.0
+
 
 从 config/commands.yaml 加载命令定义，提供：
 - 按设备类型查询可用命令列表

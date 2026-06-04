@@ -1,4 +1,11 @@
-"""设备健康检测模块。
+"""
+ @author：     JiaGuo
+ @emil：       1520047927@qq.com
+ @date：       Created in 2025/5/2 16:30
+ @description： 设备健康检测模块，SSH连接建立后检测设备CPU使用率
+ @modified By：
+ @version:     1.0
+
 
 SSH 连接建立后、业务命令执行前，检测设备 CPU 使用率和在线用户数。
 任一指标超阈值则拒绝执行，解析失败则跳过检测继续执行。

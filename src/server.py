@@ -1,4 +1,11 @@
-"""MCP 服务启动入口。
+"""
+ @author：     JiaGuo
+ @emil：       1520047927@qq.com
+ @date：       Created in 2025/4/30 14:00
+ @description： MCP服务启动入口，通过SSE传输协议启动MCP服务
+ @modified By：
+ @version:     1.0
+
 
 通过 SSE 传输协议启动 MCP 服务，监听指定地址和端口。
 """

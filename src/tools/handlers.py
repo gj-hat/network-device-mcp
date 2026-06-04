@@ -1,4 +1,11 @@
-"""MCP 工具定义模块。
+"""
+ @author：     JiaGuo
+ @emil：       1520047927@qq.com
+ @date：       Created in 2025/4/29 09:30
+ @description： MCP工具定义模块，定义4个MCP工具并注册到FastMCP实例
+ @modified By：
+ @version:     1.0
+
 
 定义 4 个 MCP 工具并注册到 FastMCP 实例：
 1. execute_readonly_command — 单设备查询

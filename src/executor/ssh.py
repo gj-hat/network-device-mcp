@@ -1,4 +1,11 @@
-"""SSH 执行层模块。
+"""
+ @author：     JiaGuo
+ @emil：       1520047927@qq.com
+ @date：       Created in 2025/4/28 11:00
+ @description： SSH执行层模块，使用netmiko连接网络设备并执行命令，支持并发控制
+ @modified By：
+ @version:     1.0
+
 
 使用 netmiko 连接网络设备并执行命令，通过 asyncio.to_thread 实现异步。
 并发上限通过 asyncio.Semaphore 控制。
