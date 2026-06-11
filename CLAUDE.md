@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+
+
+
+
+
+
 ## 项目概述
 
 网络设备只读查询 MCP 接口 — 通过 MCP 协议为 AI 助手提供安全的网络设备只读查询能力。支持 Cisco、Huawei、H3C 交换机/路由器。
