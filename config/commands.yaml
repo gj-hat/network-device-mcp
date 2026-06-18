@@ -48,7 +48,7 @@ cisco:
     description: "显示内存总量、已用、空闲"
     command: "show processes memory"
 
-  - id: show_environment
+  - id: show_environment_all
     name: "查看环境状态"
     description: "显示温度、电源、风扇状态"
     command: "show environment all"
@@ -69,7 +69,7 @@ cisco:
     description: "显示所有接口状态、速率、双工、VLAN"
     command: "show interfaces status"
 
-  - id: show_interface_detail
+  - id: show_interfaces_{interface}
     name: "查看指定接口详情"
     description: "显示指定接口的详细计数器和状态"
     command: "show interfaces {interface}"
@@ -89,7 +89,7 @@ cisco:
     description: "显示所有 Trunk 接口及其允许的 VLAN"
     command: "show interfaces trunk"
 
-  - id: show_interfaces_switchport
+  - id: show_interfaces_{interface}_switchport
     name: "查看交换端口信息"
     description: "显示指定接口的交换端口配置"
     command: "show interfaces {interface} switchport"
@@ -115,7 +115,7 @@ cisco:
     description: "显示所有 VLAN 及其成员端口"
     command: "show vlan"
 
-  - id: show_vlan_id
+  - id: show_vlan_id_{vlan_id}
     name: "查看指定 VLAN"
     description: "显示指定 VLAN 的详细信息"
     command: "show vlan id {vlan_id}"
@@ -126,12 +126,12 @@ cisco:
         min: 1
         max: 4094
 
-  - id: show_mac_address_table
+  - id: show_mac_address-table
     name: "查看 MAC 地址表"
     description: "显示全部 MAC 地址表"
     command: "show mac address-table"
 
-  - id: show_mac_address_table_interface
+  - id: show_mac_address-table_interface_{interface}
     name: "查看接口 MAC 表"
     description: "显示指定接口学到的 MAC 地址"
     command: "show mac address-table interface {interface}"
@@ -141,12 +141,12 @@ cisco:
         description: "接口名称"
         pattern: "^[A-Za-z][A-Za-z0-9/\\-\\.]+$"
 
-  - id: show_spanning_tree
+  - id: show_spanning-tree
     name: "查看生成树"
     description: "显示 STP 状态和根桥信息"
     command: "show spanning-tree"
 
-  - id: show_spanning_tree_vlan
+  - id: show_spanning-tree_vlan_{vlan_id}
     name: "查看 VLAN 生成树"
     description: "显示指定 VLAN 的 STP 信息"
     command: "show spanning-tree vlan {vlan_id}"
@@ -173,7 +173,7 @@ cisco:
     description: "显示完整 IPv4 路由表"
     command: "show ip route"
 
-  - id: show_ip_route_network
+  - id: show_ip_route_{network}
     name: "查看指定路由"
     description: "查看到指定网络的路由详情"
     command: "show ip route {network}"
@@ -192,7 +192,7 @@ cisco:
     description: "显示 ARP 缓存"
     command: "show ip arp"
 
-  - id: show_ip_arp_ip
+  - id: show_ip_arp_{ip_address}
     name: "查看指定 IP 的 ARP"
     description: "查看指定 IP 地址的 ARP 条目"
     command: "show ip arp {ip_address}"
@@ -269,12 +269,12 @@ cisco:
     command: "show lldp neighbors detail"
 
   # --- 安全 / ACL ---
-  - id: show_access_lists
+  - id: show_access-lists
     name: "查看 ACL"
     description: "显示所有访问控制列表"
     command: "show access-lists"
 
-  - id: show_ip_access_lists
+  - id: show_ip_access-lists
     name: "查看 IP ACL"
     description: "显示 IP 访问控制列表"
     command: "show ip access-lists"
@@ -291,7 +291,7 @@ cisco:
     command: "show ip dhcp pool"
 
   # --- MPLS ---
-  - id: show_mpls_forwarding_table
+  - id: show_mpls_forwarding-table
     name: "查看 MPLS 转发表"
     description: "显示 MPLS 标签转发表"
     command: "show mpls forwarding-table"
@@ -344,17 +344,17 @@ cisco:
     command: "show snmp community"
 
   # --- 配置查看（只读）---
-  - id: show_running_config
+  - id: show_running-config
     name: "查看运行配置"
     description: "显示当前运行配置（只读查看）"
     command: "show running-config"
 
-  - id: show_startup_config
+  - id: show_startup-config
     name: "查看启动配置"
     description: "显示保存的启动配置"
     command: "show startup-config"
 
-  - id: show_running_interface
+  - id: show_running-config_interface_{interface}
     name: "查看接口配置"
     description: "显示指定接口的运行配置"
     command: "show running-config interface {interface}"
@@ -365,7 +365,7 @@ cisco:
         pattern: "^[A-Za-z][A-Za-z0-9/\\-\\.]+$"
 
   # --- 诊断 ---
-  - id: ping_ip
+  - id: ping_{ip_address}
     name: "Ping 测试"
     description: "Ping 指定 IP 地址"
     command: "ping {ip_address}"
@@ -374,7 +374,7 @@ cisco:
         type: ip_address
         description: "目标 IP 地址"
 
-  - id: traceroute_ip
+  - id: traceroute_{ip_address}
     name: "路由追踪"
     description: "追踪到目标 IP 的路由路径"
     command: "traceroute {ip_address}"
@@ -393,7 +393,7 @@ cisco:
     description: "显示当前登录用户"
     command: "show users"
 
-  - id: show_tcp_brief
+  - id: show_tcp_brief_all
     name: "查看 TCP 连接"
     description: "显示活动 TCP 连接"
     command: "show tcp brief all"
@@ -408,7 +408,7 @@ cisco:
     description: "显示 NAT 统计信息"
     command: "show ip nat statistics"
 
-  - id: show_policy_map_interface
+  - id: show_policy-map_interface_{interface}
     name: "查看 QoS 策略"
     description: "显示接口 QoS 策略映射"
     command: "show policy-map interface {interface}"
@@ -424,13 +424,13 @@ cisco:
     command: "show ip cef"
 
   # --- 健康检测（内部命令，不暴露给 AI）---
-  - id: _health_cpu
+  - id: show_processes_cpu
     name: "CPU 检测"
     description: "内部使用：检测设备 CPU 使用率"
     command: "show processes cpu"
     internal: true
 
-  - id: _health_users
+  - id: show_users
     name: "在线用户检测"
     description: "内部使用：检测当前 VTY 在线用户数"
     command: "show users"
@@ -453,7 +453,7 @@ cisco_asa:
     description: "显示 CPU 使用率"
     command: "show cpu usage"
 
-  - id: show_memory
+  - id: show_memory_detail
     name: "查看内存"
     description: "显示内存使用详情"
     command: "show memory detail"
@@ -468,7 +468,7 @@ cisco_asa:
     description: "显示接口 IP 和状态摘要"
     command: "show interface ip brief"
 
-  - id: show_interface_detail
+  - id: show_interface_{interface}
     name: "查看接口详情"
     description: "显示指定接口详细信息"
     command: "show interface {interface}"
@@ -498,7 +498,7 @@ cisco_asa:
     description: "显示活跃连接数量"
     command: "show conn count"
 
-  - id: show_access_list
+  - id: show_access-list
     name: "查看 ACL"
     description: "显示所有访问控制列表和命中计数"
     command: "show access-list"
@@ -508,7 +508,7 @@ cisco_asa:
     description: "显示 NAT 规则配置"
     command: "show nat"
 
-  - id: show_service_policy
+  - id: show_service-policy
     name: "查看服务策略"
     description: "显示 MPF 服务策略统计"
     command: "show service-policy"
@@ -538,12 +538,12 @@ cisco_asa:
     description: "显示 failover 详细切换状态"
     command: "show failover state"
 
-  - id: show_vpn_sessiondb
+  - id: show_vpn-sessiondb
     name: "查看 VPN 会话汇总"
     description: "显示 VPN 会话数据库汇总"
     command: "show vpn-sessiondb"
 
-  - id: show_vpn_sessiondb_anyconnect
+  - id: show_vpn-sessiondb_anyconnect
     name: "查看 AnyConnect 会话"
     description: "显示 AnyConnect VPN 会话"
     command: "show vpn-sessiondb anyconnect"
@@ -568,12 +568,12 @@ cisco_asa:
     description: "显示日志缓冲区"
     command: "show logging"
 
-  - id: show_running_config
+  - id: show_running-config
     name: "查看运行配置"
     description: "显示运行配置"
     command: "show running-config"
 
-  - id: ping_ip
+  - id: ping_{ip_address}
     name: "Ping 测试"
     description: "Ping 指定 IP 地址"
     command: "ping {ip_address}"
@@ -582,7 +582,7 @@ cisco_asa:
         type: ip_address
         description: "目标 IP 地址"
 
-  - id: traceroute_ip
+  - id: traceroute_{ip_address}
     name: "路由追踪"
     description: "路由追踪到目标 IP"
     command: "traceroute {ip_address}"
@@ -592,13 +592,13 @@ cisco_asa:
         description: "目标 IP 地址"
 
   # --- 健康检测（内部命令，不暴露给 AI）---
-  - id: _health_cpu
+  - id: show_cpu_usage
     name: "CPU 检测"
     description: "内部使用：检测设备 CPU 使用率"
     command: "show cpu usage"
     internal: true
 
-  - id: _health_users
+  - id: show_curpriv
     name: "在线用户检测"
     description: "内部使用：检测当前在线用户数"
     command: "show curpriv"
@@ -646,7 +646,7 @@ cisco_nxos:
     description: "显示接口状态、速率、VLAN"
     command: "show interface status"
 
-  - id: show_interface_detail
+  - id: show_interface_{interface}
     name: "查看接口详情"
     description: "显示指定接口详细信息"
     command: "show interface {interface}"
@@ -671,12 +671,12 @@ cisco_nxos:
     description: "显示所有 VLAN"
     command: "show vlan"
 
-  - id: show_mac_address_table
+  - id: show_mac_address-table
     name: "查看 MAC 地址表"
     description: "显示 MAC 地址表"
     command: "show mac address-table"
 
-  - id: show_spanning_tree
+  - id: show_spanning-tree
     name: "查看生成树"
     description: "显示 STP 状态"
     command: "show spanning-tree"
@@ -691,22 +691,22 @@ cisco_nxos:
     description: "显示 vPC 摘要信息"
     command: "show vpc brief"
 
-  - id: show_vpc_peer_keepalive
+  - id: show_vpc_peer-keepalive
     name: "查看 vPC Keepalive"
     description: "显示 vPC peer-keepalive 状态"
     command: "show vpc peer-keepalive"
 
-  - id: show_vpc_consistency_parameters
+  - id: show_vpc_consistency-parameters_global
     name: "查看 vPC 一致性"
     description: "显示 vPC 全局一致性参数"
     command: "show vpc consistency-parameters global"
 
-  - id: show_port_channel_summary
+  - id: show_port-channel_summary
     name: "查看端口聚合"
     description: "显示 Port-channel 汇总"
     command: "show port-channel summary"
 
-  - id: show_port_channel_database
+  - id: show_port-channel_database
     name: "查看端口聚合数据库"
     description: "显示 Port-channel 数据库"
     command: "show port-channel database"
@@ -746,17 +746,17 @@ cisco_nxos:
     description: "显示 LLDP 邻居"
     command: "show lldp neighbors"
 
-  - id: show_logging
+  - id: show_logging_last_100
     name: "查看日志"
     description: "显示系统日志"
     command: "show logging last 100"
 
-  - id: show_running_config
+  - id: show_running-config
     name: "查看运行配置"
     description: "显示运行配置"
     command: "show running-config"
 
-  - id: ping_ip
+  - id: ping_{ip_address}
     name: "Ping 测试"
     description: "Ping 指定 IP"
     command: "ping {ip_address}"
@@ -765,7 +765,7 @@ cisco_nxos:
         type: ip_address
         description: "目标 IP 地址"
 
-  - id: traceroute_ip
+  - id: traceroute_{ip_address}
     name: "路由追踪"
     description: "追踪到目标 IP 的路由"
     command: "traceroute {ip_address}"
@@ -775,13 +775,13 @@ cisco_nxos:
         description: "目标 IP 地址"
 
   # --- 健康检测（内部命令，不暴露给 AI）---
-  - id: _health_cpu
+  - id: show_system_resources
     name: "CPU 检测"
     description: "内部使用：检测设备 CPU 使用率"
     command: "show system resources"
     internal: true
 
-  - id: _health_users
+  - id: show_users
     name: "在线用户检测"
     description: "内部使用：检测当前在线用户数"
     command: "show users"
@@ -799,7 +799,7 @@ huawei:
     description: "显示设备型号和板卡信息"
     command: "display device"
 
-  - id: display_elabel
+  - id: display_elabel_brief
     name: "查看电子标签"
     description: "显示设备序列号和电子标签"
     command: "display elabel brief"
@@ -809,12 +809,12 @@ huawei:
     description: "显示系统时间"
     command: "display clock"
 
-  - id: display_cpu_usage
+  - id: display_cpu-usage
     name: "查看 CPU 使用率"
     description: "显示 CPU 使用率"
     command: "display cpu-usage"
 
-  - id: display_memory_usage
+  - id: display_memory-usage
     name: "查看内存使用"
     description: "显示内存使用情况"
     command: "display memory-usage"
@@ -839,7 +839,7 @@ huawei:
     description: "显示所有接口状态摘要"
     command: "display interface brief"
 
-  - id: display_interface_detail
+  - id: display_interface_{interface}
     name: "查看指定接口详情"
     description: "显示指定接口的详细信息"
     command: "display interface {interface}"
@@ -869,7 +869,7 @@ huawei:
     description: "显示所有 VLAN 信息"
     command: "display vlan"
 
-  - id: display_vlan_id
+  - id: display_vlan_{vlan_id}
     name: "查看指定 VLAN"
     description: "显示指定 VLAN 详情"
     command: "display vlan {vlan_id}"
@@ -880,27 +880,27 @@ huawei:
         min: 1
         max: 4094
 
-  - id: display_mac_table
+  - id: display_mac-address
     name: "查看 MAC 地址表"
     description: "显示 MAC 地址表"
     command: "display mac-address"
 
-  - id: display_stp
+  - id: display_stp_brief
     name: "查看生成树"
     description: "显示 STP 状态"
     command: "display stp brief"
 
-  - id: display_eth_trunk
+  - id: display_eth-trunk
     name: "查看链路聚合"
     description: "显示 Eth-Trunk 汇总"
     command: "display eth-trunk"
 
-  - id: display_ip_routing_table
+  - id: display_ip_routing-table
     name: "查看路由表"
     description: "显示 IP 路由表"
     command: "display ip routing-table"
 
-  - id: display_ip_routing_table_dest
+  - id: display_ip_routing-table_{network}
     name: "查看指定路由"
     description: "查看到指定网络的路由"
     command: "display ip routing-table {network}"
@@ -909,7 +909,7 @@ huawei:
         type: ip_address
         description: "目标 IP 地址"
 
-  - id: display_ip_routing_table_stat
+  - id: display_ip_routing-table_statistics
     name: "查看路由统计"
     description: "显示路由表统计信息"
     command: "display ip routing-table statistics"
@@ -939,7 +939,7 @@ huawei:
     description: "显示 BGP 邻居"
     command: "display bgp peer"
 
-  - id: display_bgp_routing_table
+  - id: display_bgp_routing-table
     name: "查看 BGP 路由"
     description: "显示 BGP 路由表"
     command: "display bgp routing-table"
@@ -964,7 +964,7 @@ huawei:
     description: "显示 VRRP 摘要"
     command: "display vrrp brief"
 
-  - id: display_ntp_status
+  - id: display_ntp-service_status
     name: "查看 NTP 状态"
     description: "显示 NTP 同步状态"
     command: "display ntp-service status"
@@ -974,17 +974,17 @@ huawei:
     description: "显示所有 ACL"
     command: "display acl all"
 
-  - id: display_current_configuration
+  - id: display_current-configuration
     name: "查看运行配置"
     description: "显示当前配置"
     command: "display current-configuration"
 
-  - id: display_saved_configuration
+  - id: display_saved-configuration
     name: "查看保存配置"
     description: "显示已保存配置"
     command: "display saved-configuration"
 
-  - id: display_current_interface
+  - id: display_current-configuration_interface_{interface}
     name: "查看接口配置"
     description: "显示指定接口配置"
     command: "display current-configuration interface {interface}"
@@ -994,7 +994,7 @@ huawei:
         description: "接口名称"
         pattern: "^[A-Za-z][A-Za-z0-9/\\-\\.]+$"
 
-  - id: ping_ip
+  - id: ping_{ip_address}
     name: "Ping 测试"
     description: "Ping 指定 IP"
     command: "ping {ip_address}"
@@ -1003,7 +1003,7 @@ huawei:
         type: ip_address
         description: "目标 IP 地址"
 
-  - id: tracert_ip
+  - id: tracert_{ip_address}
     name: "路由追踪"
     description: "追踪路由"
     command: "tracert {ip_address}"
@@ -1038,13 +1038,13 @@ huawei:
     command: "display wlan all"
 
   # --- 健康检测（内部命令，不暴露给 AI）---
-  - id: _health_cpu
+  - id: display_cpu-usage
     name: "CPU 检测"
     description: "内部使用：检测设备 CPU 使用率"
     command: "display cpu-usage"
     internal: true
 
-  - id: _health_users
+  - id: display_users
     name: "在线用户检测"
     description: "内部使用：检测当前在线用户数"
     command: "display users"
@@ -1072,7 +1072,7 @@ h3c:
     description: "显示系统时间"
     command: "display clock"
 
-  - id: display_cpu_usage
+  - id: display_cpu-usage
     name: "查看 CPU"
     description: "显示 CPU 使用率"
     command: "display cpu-usage"
@@ -1097,7 +1097,7 @@ h3c:
     description: "显示所有接口状态摘要"
     command: "display interface brief"
 
-  - id: display_interface_detail
+  - id: display_interface_{interface}
     name: "查看接口详情"
     description: "显示指定接口详细信息"
     command: "display interface {interface}"
@@ -1117,7 +1117,7 @@ h3c:
     description: "显示所有 VLAN"
     command: "display vlan all"
 
-  - id: display_vlan_id
+  - id: display_vlan_{vlan_id}
     name: "查看指定 VLAN"
     description: "显示指定 VLAN 详情"
     command: "display vlan {vlan_id}"
@@ -1128,27 +1128,27 @@ h3c:
         min: 1
         max: 4094
 
-  - id: display_mac_table
+  - id: display_mac-address
     name: "查看 MAC 表"
     description: "显示 MAC 地址表"
     command: "display mac-address"
 
-  - id: display_stp
+  - id: display_stp_brief
     name: "查看生成树"
     description: "显示 STP 状态"
     command: "display stp brief"
 
-  - id: display_link_aggregation
+  - id: display_link-aggregation_summary
     name: "查看链路聚合"
     description: "显示链路聚合信息"
     command: "display link-aggregation summary"
 
-  - id: display_ip_routing_table
+  - id: display_ip_routing-table
     name: "查看路由表"
     description: "显示 IP 路由表"
     command: "display ip routing-table"
 
-  - id: display_ip_routing_table_dest
+  - id: display_ip_routing-table_{network}
     name: "查看指定路由"
     description: "查看到指定地址的路由"
     command: "display ip routing-table {network}"
@@ -1172,17 +1172,17 @@ h3c:
     description: "显示 OSPF 进程摘要"
     command: "display ospf brief"
 
-  - id: display_bgp_peer
+  - id: display_bgp_peer_ipv4
     name: "查看 BGP 邻居"
     description: "显示 BGP ipv4邻居"
     command: "display bgp peer ipv4"
 
-  - id: display_lldp_neighbor_information
+  - id: display_lldp_neighbor-information
     name: "查看 LLDP 邻居"
     description: "显示 LLDP 邻居详情"
     command: "display lldp neighbor-information"
 
-  - id: display_lldp_neighbor_information_list
+  - id: display_lldp_neighbor-information_list
     name: "查看 LLDP 邻居简要信息"
     description: "显示 LLDP 邻居简要信息，返回值有接口-邻居接口-邻居系统名称-邻居系统描述"
     command: "display lldp neighbor-information list"
@@ -1197,7 +1197,7 @@ h3c:
     description: "显示所有无线 AP 的 IP/MAC 地址信息"
     command: "display wlan ap all address"
 
-  - id: display_wlan_ap_all_radio_5g
+  - id: display_wlan_ap_all_radio_frequency-band_5
     name: "查看所有 AP 5G 射频信息"
     description: "显示所有无线 AP 的 5GHz 频段射频状态"
     command: "display wlan ap all radio frequency-band 5"
@@ -1207,7 +1207,7 @@ h3c:
     description: "显示所有无线 BSS（基本服务集）信息"
     command: "display wlan bss all"
 
-  - id: display_wlan_statistics_client_ip_conflict
+  - id: display_wlan_statistics_client-ip-conflict
     name: "查看无线客户端 IP 冲突统计"
     description: "显示无线客户端 IP 地址冲突统计信息"
     command: "display wlan statistics client-ip-conflict"
@@ -1217,17 +1217,17 @@ h3c:
     description: "显示所有 ACL"
     command: "display acl all"
 
-  - id: display_current_configuration
+  - id: display_current-configuration
     name: "查看运行配置"
     description: "显示当前配置"
     command: "display current-configuration"
 
-  - id: display_saved_configuration
+  - id: display_saved-configuration
     name: "查看保存配置"
     description: "显示已保存配置"
     command: "display saved-configuration"
 
-  - id: ping_ip
+  - id: ping_{ip_address}
     name: "Ping 测试"
     description: "Ping 指定 IP"
     command: "ping {ip_address}"
@@ -1236,7 +1236,7 @@ h3c:
         type: ip_address
         description: "目标 IP 地址"
 
-  - id: tracert_ip
+  - id: tracert_{ip_address}
     name: "路由追踪"
     description: "追踪路由"
     command: "tracert {ip_address}"
@@ -1265,12 +1265,12 @@ h3c:
     description: "显示无线客户端信息"
     command: "display wlan client"
 
-  - id: display_wlan_service_template_all
+  - id: display_wlan_service-template_all
     name: "查看 WLAN 服务模板"
     description: "显示所有 WLAN 服务模板"
     command: "display wlan service-template all"
 
-  - id: display_wlan_ap_detail
+  - id: display_wlan_ap_name_{ap_name}
     name: "查看指定 AP 详情"
     description: "显示指定 AP 的详细状态（上线时长、IP、型号）"
     command: "display wlan ap name {ap_name}"
@@ -1280,7 +1280,7 @@ h3c:
         description: "AP 名称"
         pattern: "^[A-Za-z0-9][A-Za-z0-9_\\-\\.]+$"
 
-  - id: display_wlan_ap_radio
+  - id: display_wlan_ap_radio_{ap_name}
     name: "查看指定 AP 射频详情"
     description: "显示指定 AP 的射频信息（信道、功率、利用率）"
     command: "display wlan ap radio {ap_name}"
@@ -1290,7 +1290,7 @@ h3c:
         description: "AP 名称"
         pattern: "^[A-Za-z0-9][A-Za-z0-9_\\-\\.]+$"
 
-  - id: display_wlan_client_ap
+  - id: display_wlan_client_ap_{ap_name}
     name: "查看指定 AP 的客户端"
     description: "显示指定 AP 下的无线客户端列表（信号、SNR）"
     command: "display wlan client ap {ap_name}"
@@ -1300,12 +1300,12 @@ h3c:
         description: "AP 名称"
         pattern: "^[A-Za-z0-9][A-Za-z0-9_\\-\\.]+$"
 
-  - id: display_wlan_radio_channel
+  - id: display_wlan_radio-channel
     name: "查看射频信道分配"
     description: "显示全局射频信道分配情况"
     command: "display wlan radio-channel"
 
-  - id: display_wlan_ap_interference
+  - id: display_wlan_ap_interference_{ap_name}
     name: "查看指定 AP 干扰信息"
     description: "显示指定 AP 的干扰信息"
     command: "display wlan ap interference {ap_name}"
@@ -1315,12 +1315,12 @@ h3c:
         description: "AP 名称"
         pattern: "^[A-Za-z0-9][A-Za-z0-9_\\-\\.]+$"
 
-  - id: display_ip_routing_table_all_vpn
+  - id: display_ip_routing-table_all-vpn-instance
     name: "查看全 VPN 路由表"
     description: "显示全 VPN 实例路由表"
     command: "display ip routing-table all-vpn-instance"
 
-  - id: display_ip_routing_table_vpn_instance
+  - id: display_ip_routing-table_vpn-instance_{vpn_instance}
     name: "查看指定 VPN 路由表"
     description: "显示指定 VPN 实例的路由表"
     command: "display ip routing-table vpn-instance {vpn_instance}"
@@ -1330,29 +1330,29 @@ h3c:
         description: "VPN 实例名称"
         pattern: "^[A-Za-z0-9][A-Za-z0-9_\\-\\.]+$"
 
-  - id: display_ip_vpn_instance
+  - id: display_ip_vpn-instance
     name: "查看所有 VPN 实例"
     description: "显示所有 VPN 实例列表"
     command: "display ip vpn-instance"
 
-  - id: display_bgp_peer_vpn_all
+  - id: display_bgp_peer_ipv4_vpn-instance-all
     name: "查看全 VPN BGP 邻居"
     description: "显示全 VPN 实例 BGP 邻居"
     command: "display bgp peer ipv4 vpn-instance-all"
 
-  - id: display_link_aggregation_verbose
+  - id: display_link-aggregation_verbose
     name: "查看聚合组详情"
     description: "显示链路聚合组概览"
     command: "display link-aggregation verbose"
 
   # --- 健康检测（内部命令，不暴露给 AI）---
-  - id: _health_cpu
+  - id: display_cpu-usage
     name: "CPU 检测"
     description: "内部使用：检测设备 CPU 使用率"
     command: "display cpu-usage"
     internal: true
 
-  - id: _health_users
+  - id: display_users
     name: "在线用户检测"
     description: "内部使用：检测当前在线用户数"
     command: "display users"
@@ -1385,7 +1385,7 @@ fortinet:
     description: "显示所有网络接口及其状态"
     command: "diagnose netlink interface list"
 
-  - id: get_router_info_routing_table_all
+  - id: get_router_info_routing-table_all
     name: "查看路由表"
     description: "显示完整路由表"
     command: "get router info routing-table all"
@@ -1440,7 +1440,7 @@ fortinet:
     description: "显示 HA 详细诊断信息"
     command: "diagnose sys ha status"
 
-  - id: execute_ping
+  - id: execute_ping_{ip_address}
     name: "Ping 测试"
     description: "Ping 指定 IP"
     command: "execute ping {ip_address}"
@@ -1449,7 +1449,7 @@ fortinet:
         type: ip_address
         description: "目标 IP 地址"
 
-  - id: execute_traceroute
+  - id: execute_traceroute_{ip_address}
     name: "路由追踪"
     description: "追踪路由"
     command: "execute traceroute {ip_address}"
@@ -1469,13 +1469,13 @@ fortinet:
     command: "diagnose log test"
 
   # --- 健康检测（内部命令，不暴露给 AI）---
-  - id: _health_cpu
+  - id: get_system_performance_status
     name: "CPU 检测"
     description: "内部使用：检测设备 CPU 使用率"
     command: "get system performance status"
     internal: true
 
-  - id: _health_users
+  - id: get_system_info_admin
     name: "在线用户检测"
     description: "内部使用：检测当前在线管理员数"
     command: "get system info admin"
@@ -1528,12 +1528,12 @@ aruba:
     description: "显示在线 AP 列表"
     command: "show ap active"
 
-  - id: show_ap_radio_summary
+  - id: show_ap_radio-summary
     name: "查看 AP 射频摘要"
     description: "显示 AP 射频状态汇总"
     command: "show ap radio-summary"
 
-  - id: show_ap_bss_table
+  - id: show_ap_bss-table
     name: "查看 AP BSS 表"
     description: "显示 AP BSS 信息"
     command: "show ap bss-table"
@@ -1543,22 +1543,22 @@ aruba:
     description: "显示 AP 与客户端关联信息"
     command: "show ap association"
 
-  - id: show_user_table
+  - id: show_user-table
     name: "查看用户表"
     description: "显示在线无线用户列表"
     command: "show user-table"
 
-  - id: show_station_table
+  - id: show_station-table
     name: "查看站点表"
     description: "显示无线站点信息"
     command: "show station-table"
 
-  - id: show_wlan_ssid_profile
+  - id: show_wlan_ssid-profile
     name: "查看 SSID 配置"
     description: "显示 SSID 配置文件"
     command: "show wlan ssid-profile"
 
-  - id: show_wlan_virtual_ap
+  - id: show_wlan_virtual-ap
     name: "查看虚拟 AP"
     description: "显示虚拟 AP 配置"
     command: "show wlan virtual-ap"
@@ -1568,12 +1568,12 @@ aruba:
     description: "显示数据路径会话表"
     command: "show datapath session"
 
-  - id: show_running_config
+  - id: show_running-config
     name: "查看运行配置"
     description: "显示运行配置"
     command: "show running-config"
 
-  - id: ping_ip
+  - id: ping_{ip_address}
     name: "Ping 测试"
     description: "Ping 指定 IP"
     command: "ping {ip_address}"
@@ -1582,7 +1582,7 @@ aruba:
         type: ip_address
         description: "目标 IP 地址"
 
-  - id: traceroute_ip
+  - id: traceroute_{ip_address}
     name: "路由追踪"
     description: "追踪路由"
     command: "traceroute {ip_address}"
@@ -1591,7 +1591,7 @@ aruba:
         type: ip_address
         description: "目标 IP 地址"
 
-  - id: show_ap_radio_detail
+  - id: show_ap_monitor_ap-list_ap-name_{ap_name}
     name: "查看指定 AP 射频详情"
     description: "显示指定 AP 的射频详细信息"
     command: "show ap monitor ap-list ap-name {ap_name}"
@@ -1601,7 +1601,7 @@ aruba:
         description: "AP 名称"
         pattern: "^[A-Za-z0-9][A-Za-z0-9_\\-\\.]+$"
 
-  - id: show_ap_arm_state
+  - id: show_ap_arm_state_ap-name_{ap_name}
     name: "查看 AP ARM 状态"
     description: "显示指定 AP 的 ARM 状态（信道利用率、噪声）"
     command: "show ap arm state ap-name {ap_name}"
@@ -1611,7 +1611,7 @@ aruba:
         description: "AP 名称"
         pattern: "^[A-Za-z0-9][A-Za-z0-9_\\-\\.]+$"
 
-  - id: show_ap_client_detail
+  - id: show_ap_association_ap-name_{ap_name}
     name: "查看指定 AP 客户端关联"
     description: "显示指定 AP 的客户端关联详情"
     command: "show ap association ap-name {ap_name}"
@@ -1622,13 +1622,13 @@ aruba:
         pattern: "^[A-Za-z0-9][A-Za-z0-9_\\-\\.]+$"
 
   # --- 健康检测（内部命令，不暴露给 AI）---
-  - id: _health_cpu
+  - id: show_switches_cpu-utilization
     name: "CPU 检测"
     description: "内部使用：检测控制器 CPU 使用率"
     command: "show switches cpu-utilization"
     internal: true
 
-  - id: _health_users
+  - id: show_loginsessions
     name: "在线用户检测"
     description: "内部使用：检测当前管理用户数"
     command: "show loginsessions"
@@ -1666,12 +1666,12 @@ juniper:
     description: "显示机箱告警"
     command: "show chassis alarms"
 
-  - id: show_system_processes
+  - id: show_system_processes_summary
     name: "查看系统进程"
     description: "显示进程和资源使用"
     command: "show system processes summary"
 
-  - id: show_chassis_routing_engine
+  - id: show_chassis_routing-engine
     name: "查看路由引擎"
     description: "显示路由引擎 CPU、内存"
     command: "show chassis routing-engine"
@@ -1681,7 +1681,7 @@ juniper:
     description: "显示接口状态和 IP 地址"
     command: "show interfaces terse"
 
-  - id: show_interface_detail
+  - id: show_interfaces_{interface}
     name: "查看接口详情"
     description: "显示指定接口详细信息"
     command: "show interfaces {interface}"
@@ -1701,7 +1701,7 @@ juniper:
     description: "显示路由表"
     command: "show route"
 
-  - id: show_route_dest
+  - id: show_route_{network}
     name: "查看指定路由"
     description: "查看指定目的的路由"
     command: "show route {network}"
@@ -1755,7 +1755,7 @@ juniper:
     description: "显示安全流会话表"
     command: "show security flow session"
 
-  - id: show_security_ipsec_sa
+  - id: show_security_ipsec_security-associations
     name: "查看 IPSec SA"
     description: "显示 IPSec 安全关联"
     command: "show security ipsec security-associations"
@@ -1775,7 +1775,7 @@ juniper:
     description: "显示 LLDP 邻居"
     command: "show lldp neighbors"
 
-  - id: ping_ip
+  - id: ping_{ip_address}_count_5
     name: "Ping 测试"
     description: "Ping 指定 IP"
     command: "ping {ip_address} count 5"
@@ -1784,7 +1784,7 @@ juniper:
         type: ip_address
         description: "目标 IP 地址"
 
-  - id: traceroute_ip
+  - id: traceroute_{ip_address}
     name: "路由追踪"
     description: "追踪路由"
     command: "traceroute {ip_address}"
@@ -1793,7 +1793,7 @@ juniper:
         type: ip_address
         description: "目标 IP 地址"
 
-  - id: show_log_messages
+  - id: show_log_messages_|_last_100
     name: "查看日志"
     description: "显示系统日志"
     command: "show log messages | last 100"
@@ -1804,13 +1804,13 @@ juniper:
     command: "show configuration"
 
   # --- 健康检测（内部命令，不暴露给 AI）---
-  - id: _health_cpu
+  - id: show_chassis_routing-engine
     name: "CPU 检测"
     description: "内部使用：检测设备 CPU 使用率"
     command: "show chassis routing-engine"
     internal: true
 
-  - id: _health_users
+  - id: show_system_users
     name: "在线用户检测"
     description: "内部使用：检测当前在线用户数"
     command: "show system users"
@@ -1858,7 +1858,7 @@ ruijie:
     description: "显示接口状态和速率"
     command: "show interfaces status"
 
-  - id: show_interface_detail
+  - id: show_interfaces_{interface}
     name: "查看接口详情"
     description: "显示指定接口详情"
     command: "show interfaces {interface}"
@@ -1873,12 +1873,12 @@ ruijie:
     description: "显示 VLAN 列表"
     command: "show vlan"
 
-  - id: show_mac_address_table
+  - id: show_mac-address-table
     name: "查看 MAC 表"
     description: "显示 MAC 地址表"
     command: "show mac-address-table"
 
-  - id: show_spanning_tree
+  - id: show_spanning-tree
     name: "查看生成树"
     description: "显示 STP 状态"
     command: "show spanning-tree"
@@ -1893,7 +1893,7 @@ ruijie:
     description: "显示 IP 路由表"
     command: "show ip route"
 
-  - id: show_ip_arp
+  - id: show_arp
     name: "查看 ARP 表"
     description: "显示 ARP 缓存"
     command: "show arp"
@@ -1913,7 +1913,7 @@ ruijie:
     description: "显示 LLDP 邻居"
     command: "show lldp neighbors"
 
-  - id: ping_ip
+  - id: ping_{ip_address}
     name: "Ping 测试"
     description: "Ping 指定 IP"
     command: "ping {ip_address}"
@@ -1922,7 +1922,7 @@ ruijie:
         type: ip_address
         description: "目标 IP 地址"
 
-  - id: traceroute_ip
+  - id: traceroute_{ip_address}
     name: "路由追踪"
     description: "追踪路由"
     command: "traceroute {ip_address}"
@@ -1931,7 +1931,7 @@ ruijie:
         type: ip_address
         description: "目标 IP 地址"
 
-  - id: show_running_config
+  - id: show_running-config
     name: "查看运行配置"
     description: "显示运行配置"
     command: "show running-config"
@@ -1943,13 +1943,13 @@ ruijie:
 
 
   # --- 健康检测（内部命令，不暴露给 AI）---
-  - id: _health_cpu
+  - id: show_cpu
     name: "CPU 检测"
     description: "内部使用：检测设备 CPU 使用率"
     command: "show cpu"
     internal: true
 
-  - id: _health_users
+  - id: show_users
     name: "在线用户检测"
     description: "内部使用：检测当前在线用户数"
     command: "show users"
@@ -1977,7 +1977,7 @@ ruckus:
     description: "显示系统时间"
     command: "show clock"
 
-  - id: show_cpu_usage
+  - id: show_cpu-usage
     name: "查看 CPU"
     description: "显示 CPU 使用率"
     command: "show cpu-usage"
@@ -1997,7 +1997,7 @@ ruckus:
     description: "显示所有接口状态摘要"
     command: "show interfaces brief"
 
-  - id: show_interface_detail
+  - id: show_interfaces_{interface}
     name: "查看接口详情"
     description: "显示指定接口详情"
     command: "show interfaces {interface}"
@@ -2012,12 +2012,12 @@ ruckus:
     description: "显示 VLAN 列表"
     command: "show vlan"
 
-  - id: show_mac_address
+  - id: show_mac-address
     name: "查看 MAC 表"
     description: "显示 MAC 地址表"
     command: "show mac-address"
 
-  - id: show_spanning_tree
+  - id: show_spanning-tree
     name: "查看生成树"
     description: "显示 STP 状态"
     command: "show spanning-tree"
@@ -2047,7 +2047,7 @@ ruckus:
     description: "显示 LLDP 邻居"
     command: "show lldp neighbors"
 
-  - id: ping_ip
+  - id: ping_{ip_address}
     name: "Ping 测试"
     description: "Ping 指定 IP"
     command: "ping {ip_address}"
@@ -2056,7 +2056,7 @@ ruckus:
         type: ip_address
         description: "目标 IP 地址"
 
-  - id: traceroute_ip
+  - id: traceroute_{ip_address}
     name: "路由追踪"
     description: "追踪路由"
     command: "traceroute {ip_address}"
@@ -2065,7 +2065,7 @@ ruckus:
         type: ip_address
         description: "目标 IP 地址"
 
-  - id: show_running_config
+  - id: show_running-config
     name: "查看运行配置"
     description: "显示运行配置"
     command: "show running-config"
@@ -2076,13 +2076,13 @@ ruckus:
     command: "show logging"
 
   # --- 健康检测（内部命令，不暴露给 AI）---
-  - id: _health_cpu
+  - id: show_cpu-usage
     name: "CPU 检测"
     description: "内部使用：检测设备 CPU 使用率"
     command: "show cpu-usage"
     internal: true
 
-  - id: _health_users
+  - id: show_users
     name: "在线用户检测"
     description: "内部使用：检测当前在线用户数"
     command: "show users"
