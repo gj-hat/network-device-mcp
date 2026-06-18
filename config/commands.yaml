@@ -1345,10 +1345,6 @@ h3c:
     description: "显示所有 VPN 实例列表"
     command: "display ip vpn-instance"
 
-  - id: display_bgp_peer_ipv4_vpn-instance-all
-    name: "查看全 VPN BGP 邻居"
-    description: "显示全 VPN 实例 BGP 邻居"
-    command: "display bgp peer ipv4 vpn-instance-all"
 
   - id: display_link-aggregation_verbose
     name: "查看聚合组详情"
