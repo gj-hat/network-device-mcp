@@ -5,15 +5,6 @@
  @description： MCP工具定义模块，定义4个MCP工具并注册到FastMCP实例
  @modified By：
  @version:     1.0
-
-
-定义 4 个 MCP 工具并注册到 FastMCP 实例：
-1. execute_readonly_command — 单设备查询
-2. batch_execute_readonly_command — 批量查询
-3. list_available_commands — 查看命令菜单
-4. execute_multi_commands — 多命令单连接执行（巡检）
-
-本模块是唯一的编排层，协调调用其他所有模块。
 """
 
 import asyncio

@@ -5,14 +5,6 @@
  @description： SSH执行层模块，使用netmiko连接网络设备并执行命令，支持并发控制
  @modified By：
  @version:     1.0
-
-
-使用 netmiko 连接网络设备并执行命令，通过 asyncio.to_thread 实现异步。
-并发上限通过 asyncio.Semaphore 控制。
-
-提供两种使用方式：
-1. 高层接口 execute() / execute_multi() — 封装完整流程（向后兼容）
-2. ssh_session 上下文管理器 — 暴露连接对象，支持健康检测等中间逻辑插入
 """
 
 import asyncio

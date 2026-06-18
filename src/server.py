@@ -5,9 +5,6 @@
  @description： MCP服务启动入口，通过SSE传输协议启动MCP服务
  @modified By：
  @version:     1.0
-
-
-通过 SSE 传输协议启动 MCP 服务，监听指定地址和端口。
 """
 
 import sys
