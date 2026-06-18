@@ -1177,6 +1177,16 @@ h3c:
     description: "显示 BGP ipv4邻居"
     command: "display bgp peer ipv4"
 
+  - id: display_bgp_peer_ipv4_vpn-instance_{vpn_instance}
+    name: "查看指定 VPN BGP 邻居"
+    description: "显示指定 VPN 实例的 BGP ipv4 邻居"
+    command: "display bgp peer ipv4 vpn-instance {vpn_instance}"
+    params:
+      - name: vpn_instance
+        type: string
+        description: "VPN 实例名称"
+        pattern: "^[A-Za-z0-9][A-Za-z0-9_\\-\\.]+$"
+
   - id: display_lldp_neighbor-information
     name: "查看 LLDP 邻居"
     description: "显示 LLDP 邻居详情"
