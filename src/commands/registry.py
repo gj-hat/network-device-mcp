@@ -5,12 +5,6 @@
  @description： 命令配置加载与解析，从commands.yaml加载命令定义并提供参数校验和命令拼装
  @modified By：
  @version:     1.0
-
-
-从 config/commands.yaml 加载命令定义，提供：
-- 按设备类型查询可用命令列表
-- 校验 command_id 和参数
-- 拼装最终命令字符串
 """
 
 import ipaddress

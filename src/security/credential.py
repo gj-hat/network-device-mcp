@@ -5,10 +5,6 @@
  @description： 凭据管理模块，从.env读取默认SSH凭据，支持客户端传入覆盖
  @modified By：
  @version:     1.0
-
-
-从 .env 读取默认 SSH 凭据，支持客户端传入覆盖。
-优先级：客户端传入 > 服务端 .env 默认值。
 """
 
 import os
