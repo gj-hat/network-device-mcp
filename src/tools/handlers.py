@@ -47,7 +47,7 @@ def register_tools(mcp: FastMCP) -> None:
         使用前请先调用 list_available_commands 获取可用的 command_id。
 
         Args:
-            host: 设备 IP 地址
+            host: 设备 IP 地址，必须使用用户明确提供的地址，禁止使用对话上下文中其他 IP 替代
             command_id: 命令标识（从命令菜单获取）
             device_type: 设备类型，支持 cisco / huawei / h3c 等，默认 cisco
             params: 命令参数，key-value 形式（可选）
@@ -86,7 +86,7 @@ def register_tools(mcp: FastMCP) -> None:
         并发上限 50 台，超出部分排队等待。
 
         Args:
-            hosts: 设备 IP 地址列表
+            hosts: 设备 IP 地址列表，必须使用用户明确提供的地址，禁止使用对话上下文中其他 IP 替代
             command_id: 命令标识
             device_type: 设备类型，默认 cisco
             params: 命令参数（可选）
@@ -190,8 +190,8 @@ def register_tools(mcp: FastMCP) -> None:
             commands: 命令列表，每项含 command_id 和可选 params，如
                       [{"command_id": "show_version", "params": {}}, ...]
             device_type: 设备类型，默认 cisco
-            host: 单台设备 IP（与 hosts 二选一）
-            hosts: 多台设备 IP 列表（与 host 二选一）
+            host: 单台设备 IP（与 hosts 二选一），必须使用用户明确提供的地址，禁止使用对话上下文中其他 IP 替代
+            hosts: 多台设备 IP 列表（与 host 二选一），必须使用用户明确提供的地址，禁止使用对话上下文中其他 IP 替代
             port: SSH 端口，默认 22
             username: SSH 用户名（可选，覆盖服务端默认凭据）
             password: SSH 密码（可选，覆盖服务端默认凭据）
