@@ -8,7 +8,6 @@
 """
 
 import asyncio
-import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -19,8 +18,6 @@ from netmiko.exceptions import (
 )
 
 from src.core.config import DEVICE_TYPE_MAP, MAX_CONCURRENCY, SSH_TIMEOUT
-
-_logger = logging.getLogger(__name__)
 
 # 模块级信号量，控制全局 SSH 并发连接数
 _semaphore = asyncio.Semaphore(MAX_CONCURRENCY)
@@ -71,10 +68,6 @@ async def ssh_session(
         "read_timeout_override": SSH_TIMEOUT,
         "conn_timeout": SSH_TIMEOUT,
     }
-
-    # [DEBUG] 临时调试日志，排查认证问题
-    pwd_masked = f"{password[:3]}***{password[-3:]}" if password and len(password) > 6 else "***"
-    _logger.warning(f"[AUTH DEBUG] host={host} user={username} pwd={pwd_masked} len={len(password) if password else 0} type={netmiko_device_type}")
 
     async with _semaphore:
         try:
