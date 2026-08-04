@@ -1345,7 +1345,6 @@ h3c:
     description: "显示所有 VPN 实例列表"
     command: "display ip vpn-instance"
 
-
   - id: display_link-aggregation_verbose
     name: "查看聚合组详情"
     description: "显示链路聚合组概览"
