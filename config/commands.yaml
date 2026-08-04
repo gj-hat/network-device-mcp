@@ -424,13 +424,13 @@ cisco:
     command: "show ip cef"
 
   # --- 健康检测（内部命令，不暴露给 AI）---
-  - id: show_processes_cpu
+  - id: _health_cpu
     name: "CPU 检测"
     description: "内部使用：检测设备 CPU 使用率"
     command: "show processes cpu"
     internal: true
 
-  - id: show_users
+  - id: _health_users
     name: "在线用户检测"
     description: "内部使用：检测当前 VTY 在线用户数"
     command: "show users"
@@ -592,13 +592,13 @@ cisco_asa:
         description: "目标 IP 地址"
 
   # --- 健康检测（内部命令，不暴露给 AI）---
-  - id: show_cpu_usage
+  - id: _health_cpu
     name: "CPU 检测"
     description: "内部使用：检测设备 CPU 使用率"
     command: "show cpu usage"
     internal: true
 
-  - id: show_curpriv
+  - id: _health_users
     name: "在线用户检测"
     description: "内部使用：检测当前在线用户数"
     command: "show curpriv"
@@ -775,13 +775,13 @@ cisco_nxos:
         description: "目标 IP 地址"
 
   # --- 健康检测（内部命令，不暴露给 AI）---
-  - id: show_system_resources
+  - id: _health_cpu
     name: "CPU 检测"
     description: "内部使用：检测设备 CPU 使用率"
     command: "show system resources"
     internal: true
 
-  - id: show_users
+  - id: _health_users
     name: "在线用户检测"
     description: "内部使用：检测当前在线用户数"
     command: "show users"
@@ -1038,13 +1038,13 @@ huawei:
     command: "display wlan all"
 
   # --- 健康检测（内部命令，不暴露给 AI）---
-  - id: display_cpu-usage
+  - id: _health_cpu
     name: "CPU 检测"
     description: "内部使用：检测设备 CPU 使用率"
     command: "display cpu-usage"
     internal: true
 
-  - id: display_users
+  - id: _health_users
     name: "在线用户检测"
     description: "内部使用：检测当前在线用户数"
     command: "display users"
@@ -1351,13 +1351,13 @@ h3c:
     command: "display link-aggregation verbose"
 
   # --- 健康检测（内部命令，不暴露给 AI）---
-  - id: display_cpu-usage
+  - id: _health_cpu
     name: "CPU 检测"
     description: "内部使用：检测设备 CPU 使用率"
     command: "display cpu-usage"
     internal: true
 
-  - id: display_users
+  - id: _health_users
     name: "在线用户检测"
     description: "内部使用：检测当前在线用户数"
     command: "display users"
@@ -1474,13 +1474,13 @@ fortinet:
     command: "diagnose log test"
 
   # --- 健康检测（内部命令，不暴露给 AI）---
-  - id: get_system_performance_status
+  - id: _health_cpu
     name: "CPU 检测"
     description: "内部使用：检测设备 CPU 使用率"
     command: "get system performance status"
     internal: true
 
-  - id: get_system_info_admin
+  - id: _health_users
     name: "在线用户检测"
     description: "内部使用：检测当前在线管理员数"
     command: "get system info admin"
@@ -1627,13 +1627,13 @@ aruba:
         pattern: "^[A-Za-z0-9][A-Za-z0-9_\\-\\.]+$"
 
   # --- 健康检测（内部命令，不暴露给 AI）---
-  - id: show_switches_cpu-utilization
+  - id: _health_cpu
     name: "CPU 检测"
     description: "内部使用：检测控制器 CPU 使用率"
     command: "show switches cpu-utilization"
     internal: true
 
-  - id: show_loginsessions
+  - id: _health_users
     name: "在线用户检测"
     description: "内部使用：检测当前管理用户数"
     command: "show loginsessions"
@@ -1809,13 +1809,13 @@ juniper:
     command: "show configuration"
 
   # --- 健康检测（内部命令，不暴露给 AI）---
-  - id: show_chassis_routing-engine
+  - id: _health_cpu
     name: "CPU 检测"
     description: "内部使用：检测设备 CPU 使用率"
     command: "show chassis routing-engine"
     internal: true
 
-  - id: show_system_users
+  - id: _health_users
     name: "在线用户检测"
     description: "内部使用：检测当前在线用户数"
     command: "show system users"
@@ -1948,13 +1948,13 @@ ruijie:
 
 
   # --- 健康检测（内部命令，不暴露给 AI）---
-  - id: show_cpu
+  - id: _health_cpu
     name: "CPU 检测"
     description: "内部使用：检测设备 CPU 使用率"
     command: "show cpu"
     internal: true
 
-  - id: show_users
+  - id: _health_users
     name: "在线用户检测"
     description: "内部使用：检测当前在线用户数"
     command: "show users"
@@ -2081,13 +2081,13 @@ ruckus:
     command: "show logging"
 
   # --- 健康检测（内部命令，不暴露给 AI）---
-  - id: show_cpu-usage
+  - id: _health_cpu
     name: "CPU 检测"
     description: "内部使用：检测设备 CPU 使用率"
     command: "show cpu-usage"
     internal: true
 
-  - id: show_users
+  - id: _health_users
     name: "在线用户检测"
     description: "内部使用：检测当前在线用户数"
     command: "show users"
